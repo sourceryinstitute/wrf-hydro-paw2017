@@ -1,6 +1,38 @@
 \section{Introduction}
 In the beginning, there was FORTRAN.
 
+\section{Introduction to Teams}\label{sec:teams}
+The existing coarray definition in Fortran 2008 does not provide for an environment
+where a subset of the images can easily work on part of an application without affecting
+other images in the program.  Grouping the images of a program into nonoverlapping
+teams allows one to execute more effectively and independently parts of a larger
+problem.  A class of problems that can benefit from this feature is multiphysics codes
+(e.g.  climate models).
+Such feature, called \textit{Teams} in the Fortran 2015 standard, can significantly reduce the amount of off-node
+communication on an exascale machine, in particular when an entire team of images
+fits within a single compute node.
+So far, the only compiler with a partial support for this new feature is the GNU Fortran Compiler (from now on
+called GFortran) and a special version of the OpenCoarrays library.
+In this Section we are going to introduce the basic constructs of \textit{Teams} and how OpenCoarrays implements them.
+
+A team of images is a set of images that can readily execute independently of other images.
+Initially, the current team consists of all images and this is
+known as the initial team. Except for the initial team, every team has a unique parent team. A team is divided
+into new teams by executing a \texttt{FORM TEAM} statement.
+Each new team is identified by an integer value known
+as its team number. Information about the team to which the current image belongs can be determined by the
+processor from the collective value of the team variables on the images of the team.
+
+During execution, each image has a current team, which is only changed by execution of \texttt{CHANGE TEAM} and
+\texttt{END TEAM} statements. Executing a \texttt{CHANGE TEAM} statement changes the current team to the team specified
+by the team-variable, and execution of the corresponding \texttt{END TEAM} statement restores the current team back
+to that immediately prior to execution of the \texttt{CHANGE TEAM} statement.
+
+\subsection{Teams implementation}\label{subsec:teams_implementation}
+
+From an MPI prospective, a Fortran team is comparable to an MPI communicator. The \texttt{FORM TEAM} statement can be
+implemented using \texttt{MPI\_Comm\_split} and 
+
 %%%
 %%% Sample tables
 %%%
