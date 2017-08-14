@@ -70,7 +70,7 @@ variable as second argument.
 Successful execution of a \texttt{FORM TEAM} statement assigns the team-variable (of type \texttt{TEAM TYPE}) on each
 participating image a value that specifies the new team that the image will belong to.
 The \texttt{CHANGE TEAM} statement takes as argument a \texttt{TEAM TYPE} variable that represents the new team to be used as
-current team. The execution of the \textt{END TEAM} statement restores the current team back
+current team. The execution of the \texttt{END TEAM} statement restores the current team back
 to that immediately prior to execution of the \texttt{CHANGE TEAM} statement.
 
 \subsection{Teams implementation}\label{subsec:teams_implementation}
@@ -87,7 +87,7 @@ representing the current communicator gets reassigned with the value contained i
 Finally, a new element is added to the list of used teams. This list of element is nothing but a list of pointers to the elements of the list
 of available teams. The insert operation is always performed at the beginning of the list in order to keep track of the teams hierarchy.
 
-An execution of the \textt{END TEAM} statements is implemented by removing the first element of the list of used teams and reassigning the
+An execution of the \texttt{END TEAM} statements is implemented by removing the first element of the list of used teams and reassigning the
 \texttt{current team} to the new first element of the list of used teams.
 
 The list of available and used teams are both initialized to team 1 (equivalent to \texttt{MPI\_COMM\_WORLD}) at the beginning of the execution.
