@@ -33,6 +33,22 @@ to that immediately prior to execution of the \texttt{CHANGE TEAM} statement.
 From an MPI prospective, a Fortran team is comparable to an MPI communicator. The \texttt{FORM TEAM} statement can be
 implemented using \texttt{MPI\_Comm\_split} and 
 
+
+
+\begin{figure*}
+\includegraphics[width=0.7\textwidth]{figures/teams}
+\vspace{-36pt}
+\caption{Schematic depiction of a Fortran program executing over time (left axis) in 12 images (top) thatcommunicate with each other through global means (black horizontal bar) and later communicating within subgroups (colored horizontal bars).  Horizontal lines represent the communication mechanisms (default=solid, optional=dashed).  Fortran concepts or on the left.  The underlying \gls{mpi} concepts are the right.}
+\end{figure*}
+%
+
+\begin{figure*}
+\includegraphics[width=0.7\textwidth]{figures/hydro-map}
+\vspace{-36pt}
+\caption{Sample WRF-Hydro simulation domain.}
+\end{figure*}
+%
+
 %%%
 %%% Sample tables
 %%%
