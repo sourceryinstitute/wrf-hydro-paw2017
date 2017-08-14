@@ -36,6 +36,62 @@ that is intended to facilitate the incremental introductionof \gls{caf} in an al
 
 \section{Conclusions}
 
+\section{Introduction to Teams}\label{sec:teams}
+The existing coarray definition in Fortran 2008 does not provide for an environment
+where a subset of the images can easily work on part of an application without affecting
+other images in the program.  Grouping the images of a program into nonoverlapping
+teams allows one to execute more effectively and independently parts of a larger
+problem.  A class of problems that can benefit from this feature is multiphysics codes
+(e.g.  climate models).
+Such feature, called \textit{Teams} in the Fortran 2015 standard, can significantly reduce the amount of off-node
+communication on an exascale machine, in particular when an entire team of images
+fits within a single compute node.
+So far, the only compiler with a partial support for this new feature is the GNU Fortran Compiler (from now on
+called GFortran) and a special version of the OpenCoarrays library.
+In this Section we are going to introduce the basic constructs of \textit{Teams} and how OpenCoarrays implements them.
+
+A team of images is a set of images that can readily execute independently of other images.
+Initially, the current team consists of all images and this is
+known as the initial team. Except for the initial team, every team has a unique parent team. A team is divided
+into new teams by executing a \texttt{FORM TEAM} statement.
+Each new team is identified by an integer value known
+as its team number. Information about the team to which the current image belongs can be determined by the
+processor from the collective value of the team variables on the images of the team.
+The \texttt{FORM TEAM} statement is a collective operation executed by all the images.
+
+During execution, each image has a current team, which is only changed by execution of \texttt{CHANGE TEAM} and
+\texttt{END TEAM} statements. Executing a \texttt{CHANGE TEAM} statement changes the current team to the team specified
+by the team-variable, and execution of the corresponding \texttt{END TEAM} statement restores the current team back
+to that immediately prior to execution of the \texttt{CHANGE TEAM} statement.
+
+Teams are described by a scalar variable called \texttt{TEAM TYPE}. This variable is a derived type with private components.
+The \texttt{FORM TEAM} statement takes as first argument a team number that uniquely identifies the team and a \texttt{TEAM TYPE}
+variable as second argument.
+Successful execution of a \texttt{FORM TEAM} statement assigns the team-variable (of type \texttt{TEAM TYPE}) on each
+participating image a value that specifies the new team that the image will belong to.
+The \texttt{CHANGE TEAM} statement takes as argument a \texttt{TEAM TYPE} variable that represents the new team to be used as
+current team. The execution of the \textt{END TEAM} statement restores the current team back
+to that immediately prior to execution of the \texttt{CHANGE TEAM} statement.
+
+\subsection{Teams implementation}\label{subsec:teams_implementation}
+
+From an MPI prospective, a Fortran team is comparable to an MPI communicator. The \texttt{FORM TEAM} statement is implemented in OpenCoarrays
+using \texttt{MPI\_Comm\_split} and passing the team id argument as \textit{color} for \texttt{MPI\_Comm\_split}.
+In case of success, the resulting communicator is stored into a list of available teams.
+Every element of the list keeps track of the association of team id and actual MPI communicator.
+The elements of the list of available teams gets returned by the function and stored into the \texttt{TEAM TYPE} variable.
+
+When the \texttt{CHANGE TEAM} statement gets invoked, the element of the list of available teams stored into the \texttt{TEAM TYPE} variable
+gets passed as argument to the correspondent OpenCoarrays function. The \texttt{current\_team} variable used inside OpenCoarrays for
+representing the current communicator gets reassigned with the value contained into the element of the list passed as argument.
+Finally, a new element is added to the list of used teams. This list of element is nothing but a list of pointers to the elements of the list
+of available teams. The insert operation is always performed at the beginning of the list in order to keep track of the teams hierarchy.
+
+An execution of the \textt{END TEAM} statements is implemented by removing the first element of the list of used teams and reassigning the
+\texttt{current team} to the new first element of the list of used teams.
+
+The list of available and used teams are both initialized to team 1 (equivalent to \texttt{MPI\_COMM\_WORLD}) at the beginning of the execution.
+
 \begin{figure*}
 \includegraphics[width=0.7\textwidth]{figures/teams}
 \vspace{-36pt}
