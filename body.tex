@@ -139,7 +139,7 @@ The list of available and used teams are both initialized to team 1 (equivalent 
 \subsection{A language extension}
 Discuss \lstinline|get_communicator|
 
-\subsection{Caffeinating WRF-Hydro}
+\subsection{Teams Caffeination of WRF-Hydro: Ensemble Simulation}
 \gls{wrf-hydro} is a community hydrologic modeling system that provides a parallel-computing
 framework for coupling Numerical Weather Prediction models (\ref{fig:caffeinate-wrf-hydro}a), land surface models
 (\ref{fig:caffeinate-wrf-hydro}b), and a suite of hydrologic routing modules that handle spatial water redistribution
@@ -150,36 +150,43 @@ baseflow (deep groundwater, \ref{fig:caffeinate-wrf-hydro}d), and stream channel
 While originally developed to couple land hydrology to the atmospheric processes of
 the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
 coupled to (forced by) prescribed upper boundary (weather)
-conditions (Figure 2a). The chief example is NOAA's operational
+conditions (\ref{fig:caffeinate-wrf-hydro}). The chief example is NOAA's operational
 National Water Model~\cite{noaa2016}; a special configuration of
 WRF-Hydro which provides real-time analysis and forecasts of
-hydrologic states over the contiguous U.S (Figure 2).
+hydrologic states over the contiguous U.S (\ref{fig:caffeinate-wrf-hydro}). Here we 
 
 Ensemble forecasting and ensemble data assimilation are active and
 growing areas of research with WRF-Hydro. Running ensembles under a
 single executable and job submission on HPC platforms as shown in
-Figure 2 can greatly reduce the amount
+\ref{fig:caffeinate-wrf-hydro} can greatly reduce the amount
 of labor involved in designing workflows and can open up new
 possibilities for improving data flows and optimizing ensemble run
-performance. Particularly, we plan to investigate performing shared model
-initialization just once over all teams using the full number of
-images prior to forming teams. Communicating the shared initialization
-to each team should provide
+performance. 
 
-initialization just once the full number of images prior to forming teams. Communicating the shared initialization
-to each team should provide particular computational savings for
+Particularly, we plan to investigate restructuring the code to perform
+model initialization which is shared over all ensemble members using
+the full number of images prior to forming teams. Amortizing common
+model initialization across all available computational resources
+rather than repeating common aspects of the initialization in each
+ensemble member using only that member's fraction of the resources has
+the potentital to provide notable computational savings for
 ensemble model runs where initialization comprises a large fraction of
-the total run time. 
+the total run time. Such an example is in the production run of the
+National Water Model short-term forecasts. Here we are currently
+researching the possibility of moving from the current deterministic
+(single ensemble member) model run to an ensemble run. Currently the
+full initialization requires approximately 50\% of the run time on
+NCAR's yellowstone computer and greater than that on NOAA's WCOSS
+system~\cite{yuetal2017}. In this application for an ensemble size of 50, we estimate that
+approximately half the runtime (f=.5) can be sped up by a factor of
+49 (the ensemble size -1, S_f=49). Amdhal's law yields a total speedup
+of 2 running with 50 ensemble members
 
-These immediate goals lay the foundation for exploring code
-restructuring aimed at amortizing common model initialization across
-all available computational resources rather than repeating common  
-aspects of the initialization in each ensemble member using only that
-member's fraction of the hardware resources available to
-each. 
+S= 1 / { f/S_f + (1-f) } = 1 / (.5/49 + (1-.5)) = 1.96
 
-Going from a deterministic run to an ensemble run.
-
+The assumption S_f=49 is justified because the particular subcompnents of
+the model targeted in the application can run on very few processors while the
+initialization is memory-limited. 
 
 In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
 over the individual ensemble members. The number of images per team and the
