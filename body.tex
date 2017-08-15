@@ -32,6 +32,38 @@ that is intended to facilitate the incremental introductionof \gls{caf} in an al
 \subsection{Teams support in OpenCoarrays}
 \subsection{Teams use in WRF-Hydro}
 
+WRF-Hydro is a community hydrologic modeling system developed at the
+National Center for Atmospheric Research.  WRF-Hydro provides a
+parallel-computing framework for coupling Numerical Weather Prediction models, land surface models, and a suite of hydrologic routing modules that handle
+spatial water redistribution via surface (overland) flow,
+subsurface (soil column) flow, baseflow (deep groundwater), and stream
+channel transport~\cite{gochisEtal}. 
+
+While originally developed to couple land hydrology to the atmospheric processes of
+the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
+coupled to (forced by) prescribed upper boundary (weather)
+conditions. The chief example is NOAA's operational
+National Water Model~\cite{noaa2016}; a special configuration of
+WRF-Hydro which provides real-time analysis and forecasts of
+hydrologic states over the contiguous U.S. 
+
+Ensemble forecasting and ensemble data assimilation are active and
+growing areas of research with WRF-Hydro. Running ensembles under a
+single executable and job submission on HPC platforms can greatly reduce the amount
+of labor involved in designing workflows and can open up new
+possibilities for improving data flows and optimizing ensemble run
+performance.
+
+In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
+over the individual ensemble members. The number of images per team and the
+ number of ensemble members are specified in a namelist. Along  with
+ the number of available images, these parameters determine how many
+ teams are formed and which teams handle which ensemble members. It is
+ worth noting several details of separate runs which may potentially need altering
+ when running enembles via teams: 1) MPIINIT, 2) MPIFINALIZE, 3)
+ variable initialization and allocation, 4) STOP.   
+ 
+
 \section{Discussion of Results}
 
 \section{Conclusions}
@@ -43,7 +75,7 @@ other images in the program.  Grouping the images of a program into nonoverlappi
 teams allows one to execute more effectively and independently parts of a larger
 problem.  A class of problems that can benefit from this feature is multiphysics codes
 (e.g.  climate models).
-Such feature, called \textit{Teams} in the Fortran 2015 standard, can significantly reduce the amount of off-node
+Such a feature, called \textit{Teams} in the Fortran 2015 standard, can significantly reduce the amount of off-node
 communication on an exascale machine, in particular when an entire team of images
 fits within a single compute node.
 So far, the only compiler with a partial support for this new feature is the GNU Fortran Compiler (from now on

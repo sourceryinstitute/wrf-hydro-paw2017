@@ -36,7 +36,7 @@
 \input glossary/acronyms.tex
 
 \begin{document}
-\title{On the incremental caffeination of a terrestrial hydrological modeling framework}
+\title{Incremental caffeination with teams: application to a terrestrial hydrological modeling framework}
 %\titlenote{Produces the permission block, and
 %  copyright information}
 %\subtitle{Extended Abstract}
@@ -55,7 +55,7 @@
 \email{damian@sourceryinstitute.org}
 \renewcommand{\shortauthors}{D. Rouson et al.}
 
-\author{James McCreight}
+\author{James L. McCreight}
 \orcid{0000-000?-????-????}
 \affiliation{%
   \institution{National Center for Atmospheric Research}
@@ -79,19 +79,15 @@
 
 
 \begin{abstract}
-We present a coarray Fortran (CAF) use case involving the initial steps in transitioning
-a moderately large production code from using the Message Passing Interface (MPI)
-to using mixed CAF/MPI.  In particular, we exploit recently developed support for
-Fortran 2015 process teaming to demonstrate how to replace job scripts previously
-used to launch ensemble runs of the WRF-Hydro hydrological model developed
-at the National Center for Atmospheric Research.  For this purpose, we developed the
+We present an application of coarray Fortran (CAF) teams (grouped parallelism) to embarrassingly parallel, ensemble simulation in the context of an existing MPI code base.
+The problem with the grouped parallelism is that, unlike ungrouped communication, CAF and the Message Passing Interface (MPI) must be able to talk to each other. 
+The fortran standard standard will never officially allow communication with MPI, an external technology. Grouped parallelism therefore forces a global decision: either use CAF or MPI for all communications, do not mix. An attractive feature of ungrouped parallelism, particularly for large code bases, is that CAF and MPI can easily be mixed to allow a gradual transition, or "caffeination", of codes from MPI to CAF. We present a solution to this problem that supports incremental caffeination with minimal changes to the original MPI and is achieved by wrapping an MPI code base with CAF teams.
+
+We demonstrate the approach using the WRF-Hydro hydrologic model, developed at the National Center for Atmospheric Research. 
+We replace batch job submission scripts with Fortran 2015 teams and run the ensemble within a single executable. For this purpose, we developed the
 first implementation of compiler and parallel runtime library support for Fortran 2015
 teams using a public fork of the GNU Compiler Collection (GCC) Fortran front end and
-an open-source branch of the OpenCoarrays application binary interface.  We believe
-the approach presented represents a common use case that will be representative of the
-class of embarrassingly parallel applications, a class of problems that falls outside the
-most common published demonstrations of CAF.  We further discuss the potential for
-applying the same strategy to incrementally introduce CAF into an existing MPI code.
+an open-source branch of the OpenCoarrays application binary interface.
 \end{abstract}
 
 %
