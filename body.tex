@@ -34,34 +34,37 @@ that is intended to facilitate the incremental introductionof \gls{caf} in an al
 
 WRF-Hydro is a community hydrologic modeling system developed at the
 National Center for Atmospheric Research.  WRF-Hydro provides a
-parallel-computing framework for coupling Numerical Weather Prediction models, land surface models, and a suite of hydrologic routing modules that handle
-spatial water redistribution via surface (overland) flow,
-subsurface (soil column) flow, baseflow (deep groundwater), and stream
-channel transport~\cite{gochisEtal}. 
+parallel-computing framework for coupling Numerical Weather Prediction
+models (Figure 2a), land surface models (Figure 2b), and a suite of hydrologic routing modules that handle
+spatial water redistribution via surface (overland) flow (Figure 2c),
+subsurface (soil column) flow (Figure 2c), baseflow (deep groundwater,
+Figure 2d), and stream
+channel transport (Figure 2e)~\cite{gochisEtal}. 
 
 While originally developed to couple land hydrology to the atmospheric processes of
 the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
 coupled to (forced by) prescribed upper boundary (weather)
-conditions. The chief example is NOAA's operational
+conditions (Figure 2a). The chief example is NOAA's operational
 National Water Model~\cite{noaa2016}; a special configuration of
 WRF-Hydro which provides real-time analysis and forecasts of
-hydrologic states over the contiguous U.S. 
+hydrologic states over the contiguous U.S (Figure 2). 
 
 Ensemble forecasting and ensemble data assimilation are active and
 growing areas of research with WRF-Hydro. Running ensembles under a
-single executable and job submission on HPC platforms can greatly reduce the amount
+single executable and job submission on HPC platforms as shown in
+Figure 2 can greatly reduce the amount
 of labor involved in designing workflows and can open up new
 possibilities for improving data flows and optimizing ensemble run
 performance.
 
 In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
 over the individual ensemble members. The number of images per team and the
- number of ensemble members are specified in a namelist. Along  with
+ number of ensemble members are specified in a namelist. Along with
  the number of available images, these parameters determine how many
  teams are formed and which teams handle which ensemble members. It is
  worth noting several details of separate runs which may potentially need altering
- when running enembles via teams: 1) MPIINIT, 2) MPIFINALIZE, 3)
- variable initialization and allocation, 4) STOP.   
+ when running enembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
+ variable initialization and allocation, 4) \texttt{STOP}.   
  
 
 \section{Discussion of Results}
@@ -134,10 +137,15 @@ The list of available and used teams are both initialized to team 1 (equivalent 
 \begin{figure*}
 \includegraphics[width=0.7\textwidth]{figures/WRF-Hydro-caf-ens-model_chain.png}
 \vspace{-7pt}
-\caption{Example showing the partially caffeniated WRF-Hydro Model Chain (NOAA's National Water
-  Model Implementation) which is already under MPI (in blue = decaf). Coarray
-  fortran teams are applied to multiple model chains as ensemble members under the same
-  executable. One such ensemble member is shown in the red box.}
+\caption{Caffeniation of NCAR's WRF-Hydro model using coarray Fortran (CAF)
+  teams. Specific example components of  NOAA's National Water
+  Model are shown. Independent CAF teams run under a single Fortran executable are represented by the different colors
+  (MPI terminology) in the stack.  Teams run separate instances
+  (ensemble members) of the WRF-Hydro model chain to enable ensemble
+  simulation and forecasting. The work presented  here supports for ``partial model caffeination'' with grouped
+  paralleism (CAF teams): the underlying WRF-Hydro Model Chain
+  originally under MPI can be transitioned incrementally towards CAF
+  over time}
 \end{figure*}
 %
 
