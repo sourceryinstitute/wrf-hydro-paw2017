@@ -50,14 +50,61 @@ aspects of the initialzation in each ensemble member using only that member's fr
 each. Section~\ref{sec:discussion} pre
 
 \section{Methodology}
+<<<<<<< HEAD
 \subsection{Teams in Fortran 2015}\label{teams-in-fortran-2015}
+=======
+\subsection{Teams implementation in GNU Fortran}
+\subsection{Teams support in OpenCoarrays}
+\subsection{Teams use in WRF-Hydro}
+
+WRF-Hydro is a community hydrologic modeling system developed at the
+National Center for Atmospheric Research.  WRF-Hydro provides a
+parallel-computing framework for coupling Numerical Weather Prediction
+models (Figure 2a), land surface models (Figure 2b), and a suite of hydrologic routing modules that handle
+spatial water redistribution via surface (overland) flow (Figure 2c),
+subsurface (soil column) flow (Figure 2c), baseflow (deep groundwater,
+Figure 2d), and stream
+channel transport (Figure 2e)~\cite{gochisEtal}. 
+
+While originally developed to couple land hydrology to the atmospheric processes of
+the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
+coupled to (forced by) prescribed upper boundary (weather)
+conditions (Figure 2a). The chief example is NOAA's operational
+National Water Model~\cite{noaa2016}; a special configuration of
+WRF-Hydro which provides real-time analysis and forecasts of
+hydrologic states over the contiguous U.S (Figure 2). 
+
+Ensemble forecasting and ensemble data assimilation are active and
+growing areas of research with WRF-Hydro. Running ensembles under a
+single executable and job submission on HPC platforms as shown in
+Figure 2 can greatly reduce the amount
+of labor involved in designing workflows and can open up new
+possibilities for improving data flows and optimizing ensemble run
+performance.
+
+In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
+over the individual ensemble members. The number of images per team and the
+ number of ensemble members are specified in a namelist. Along with
+ the number of available images, these parameters determine how many
+ teams are formed and which teams handle which ensemble members. It is
+ worth noting several details of separate runs which may potentially need altering
+ when running enembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
+ variable initialization and allocation, 4) \texttt{STOP}.   
+ 
+
+\section{Discussion of Results}
+
+\section{Conclusions}
+
+\section{Introduction to Teams}\label{sec:teams}
+>>>>>>> a9144fdf9d438ce50a8602f27204bbadc07af0f2
 The existing coarray definition in Fortran 2008 does not provide for an environment
 where a subset of the images can easily work on part of an application without affecting
 other images in the program.  Grouping the images of a program into nonoverlapping
 teams allows one to execute more effectively and independently parts of a larger
 problem.  A class of problems that can benefit from this feature is multiphysics codes
 (e.g.  climate models).
-Such feature, called \textit{Teams} in the Fortran 2015 standard, can significantly reduce the amount of off-node
+Such a feature, called \textit{Teams} in the Fortran 2015 standard, can significantly reduce the amount of off-node
 communication on an exascale machine, in particular when an entire team of images
 fits within a single compute node.
 So far, the only compiler with a partial support for this new feature is the GNU Fortran Compiler (from now on
@@ -89,7 +136,7 @@ to that immediately prior to execution of the \texttt{CHANGE TEAM} statement.
 
 \subsection{Teams in \gls{gcc} and OpenCoarrays}\label{subsec:teams-in-gcc}
 
-From an MPI prospective, a Fortran team is comparable to an MPI communicator. The \texttt{FORM TEAM} statement is implemented in OpenCoarrays
+From an MPI perspective, a Fortran team is comparable to an MPI communicator. The \texttt{FORM TEAM} statement is implemented in OpenCoarrays
 using \texttt{MPI\_Comm\_split} and passing the team id argument as \textit{color} for \texttt{MPI\_Comm\_split}.
 In case of success, the resulting communicator is stored into a list of available teams.
 Every element of the list keeps track of the association of team id and actual MPI communicator.
@@ -114,9 +161,23 @@ The list of available and used teams are both initialized to team 1 (equivalent 
 %
 
 \begin{figure*}
+<<<<<<< HEAD
 \includegraphics[width=0.7\textwidth]{figures/hydro-map}
 \vspace{-36pt}
 \caption{Sample \gls{wrf-hydro} simulation domain.}
+=======
+\includegraphics[width=0.7\textwidth]{figures/WRF-Hydro-caf-ens-model_chain.png}
+\vspace{-7pt}
+\caption{Caffeniation of NCAR's WRF-Hydro model using coarray Fortran (CAF)
+  teams. Specific example components of  NOAA's National Water
+  Model are shown. Independent CAF teams run under a single Fortran executable are represented by the different colors
+  (MPI terminology) in the stack.  Teams run separate instances
+  (ensemble members) of the WRF-Hydro model chain to enable ensemble
+  simulation and forecasting. The work presented  here supports for ``partial model caffeination'' with grouped
+  paralleism (CAF teams): the underlying WRF-Hydro Model Chain
+  originally under MPI can be transitioned incrementally towards CAF
+  over time}
+>>>>>>> a9144fdf9d438ce50a8602f27204bbadc07af0f2
 \end{figure*}
 %
 
