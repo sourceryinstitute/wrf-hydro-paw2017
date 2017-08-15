@@ -50,11 +50,6 @@ aspects of the initialzation in each ensemble member using only that member's fr
 each. Section~\ref{sec:discussion} pre
 
 \section{Methodology}
-<<<<<<< HEAD
-\subsection{Teams in Fortran 2015}\label{teams-in-fortran-2015}
-=======
-\subsection{Teams implementation in GNU Fortran}
-\subsection{Teams support in OpenCoarrays}
 \subsection{Teams use in WRF-Hydro}
 
 WRF-Hydro is a community hydrologic modeling system developed at the
@@ -64,7 +59,7 @@ models (Figure 2a), land surface models (Figure 2b), and a suite of hydrologic r
 spatial water redistribution via surface (overland) flow (Figure 2c),
 subsurface (soil column) flow (Figure 2c), baseflow (deep groundwater,
 Figure 2d), and stream
-channel transport (Figure 2e)~\cite{gochisEtal}. 
+channel transport (Figure 2e)~\cite{gochisEtal}.
 
 While originally developed to couple land hydrology to the atmospheric processes of
 the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
@@ -72,7 +67,7 @@ coupled to (forced by) prescribed upper boundary (weather)
 conditions (Figure 2a). The chief example is NOAA's operational
 National Water Model~\cite{noaa2016}; a special configuration of
 WRF-Hydro which provides real-time analysis and forecasts of
-hydrologic states over the contiguous U.S (Figure 2). 
+hydrologic states over the contiguous U.S (Figure 2).
 
 Ensemble forecasting and ensemble data assimilation are active and
 growing areas of research with WRF-Hydro. Running ensembles under a
@@ -89,15 +84,9 @@ over the individual ensemble members. The number of images per team and the
  teams are formed and which teams handle which ensemble members. It is
  worth noting several details of separate runs which may potentially need altering
  when running enembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
- variable initialization and allocation, 4) \texttt{STOP}.   
- 
+ variable initialization and allocation, 4) \texttt{STOP}.
 
-\section{Discussion of Results}
-
-\section{Conclusions}
-
-\section{Introduction to Teams}\label{sec:teams}
->>>>>>> a9144fdf9d438ce50a8602f27204bbadc07af0f2
+\subsection{Teams in Fortran 2015}\label{teams-in-fortran-2015}
 The existing coarray definition in Fortran 2008 does not provide for an environment
 where a subset of the images can easily work on part of an application without affecting
 other images in the program.  Grouping the images of a program into nonoverlapping
@@ -161,11 +150,6 @@ The list of available and used teams are both initialized to team 1 (equivalent 
 %
 
 \begin{figure*}
-<<<<<<< HEAD
-\includegraphics[width=0.7\textwidth]{figures/hydro-map}
-\vspace{-36pt}
-\caption{Sample \gls{wrf-hydro} simulation domain.}
-=======
 \includegraphics[width=0.7\textwidth]{figures/WRF-Hydro-caf-ens-model_chain.png}
 \vspace{-7pt}
 \caption{Caffeniation of NCAR's WRF-Hydro model using coarray Fortran (CAF)
@@ -177,11 +161,8 @@ The list of available and used teams are both initialized to team 1 (equivalent 
   paralleism (CAF teams): the underlying WRF-Hydro Model Chain
   originally under MPI can be transitioned incrementally towards CAF
   over time}
->>>>>>> a9144fdf9d438ce50a8602f27204bbadc07af0f2
 \end{figure*}
 %
-
-\subsection{Teams in \gls{wrf-hydro}}
 \section{Discussion of Results}
 \section{Conclusions}
 
