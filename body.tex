@@ -75,7 +75,7 @@ to that immediately prior to execution of the \texttt{CHANGE TEAM} statement.
 
 \subsection{Teams implementation}\label{subsec:teams_implementation}
 
-From an MPI prospective, a Fortran team is comparable to an MPI communicator. The \texttt{FORM TEAM} statement is implemented in OpenCoarrays
+From an MPI perspective, a Fortran team is comparable to an MPI communicator. The \texttt{FORM TEAM} statement is implemented in OpenCoarrays
 using \texttt{MPI\_Comm\_split} and passing the team id argument as \textit{color} for \texttt{MPI\_Comm\_split}.
 In case of success, the resulting communicator is stored into a list of available teams.
 Every element of the list keeps track of the association of team id and actual MPI communicator.
@@ -100,9 +100,12 @@ The list of available and used teams are both initialized to team 1 (equivalent 
 %
 
 \begin{figure*}
-\includegraphics[width=0.7\textwidth]{figures/hydro-map}
-\vspace{-36pt}
-\caption{Sample WRF-Hydro simulation domain.}
+\includegraphics[width=0.7\textwidth]{figures/WRF-Hydro-caf-ens-model_chain.png}
+\vspace{-7pt}
+\caption{Example showing the partially caffeniated WRF-Hydro Model Chain (NOAA's National Water
+  Model Implementation) which is already under MPI (in blue = decaf). Coarray
+  fortran teams are applied to multiple model chains as ensemble members under the same
+  executable. One such ensemble member is shown in the red box.}
 \end{figure*}
 %
 
