@@ -53,46 +53,7 @@ supporting OpenCoarrays branch offers a language extension that assists with inc
 Section~\ref{sec:discussion} discusses the results of this effort. Section~\ref{sec:conclusions} summarizes our conclusions
 and describes plans for future work.
 
-\section{Methodology}\ref{sec:methodology}
-\subsection{Teams in WRF-Hydro}
-\gls{wrf-hydro} is a community hydrologic modeling system that provides a parallel-computing
-framework for coupling Numerical Weather Prediction models (\ref{fig:caffeinate-wrf-hydro}a), land surface models
-(\ref{fig:caffeinate-wrf-hydro}b), and a suite of hydrologic routing modules that handle spatial water redistribution
-via surface (overland) flow (\ref{fig:caffeinate-wrf-hydro}c), subsurface (soil column) flow (\ref{fig:caffeinate-wrf-hydro}c),
-baseflow (deep groundwater, \ref{fig:caffeinate-wrf-hydro}d), and stream channel transport
-(\ref{fig:caffeinate-wrf-hydro}e)~\cite{gochisEtal}.
-
-While originally developed to couple land hydrology to the atmospheric processes of
-the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
-coupled to (forced by) prescribed upper boundary (weather)
-conditions (Figure 2a). The chief example is NOAA's operational
-National Water Model~\cite{noaa2016}; a special configuration of
-WRF-Hydro which provides real-time analysis and forecasts of
-hydrologic states over the contiguous U.S (Figure 2).
-
-Ensemble forecasting and ensemble data assimilation are active and
-growing areas of research with WRF-Hydro. Running ensembles under a
-single executable and job submission on HPC platforms as shown in
-Figure 2 can greatly reduce the amount
-of labor involved in designing workflows and can open up new
-possibilities for improving data flows and optimizing ensemble run
-performance. Particularly, we plan to investigate performing shared model
-initialization just once over all teams using the full number of
-images prior to forming teams. Communicating the shared initialization
-to each team should provide
-
-Going from a deterministic run
-
-
-In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
-over the individual ensemble members. The number of images per team and the
- number of ensemble members are specified in a namelist. Along with
- the number of available images, these parameters determine how many
- teams are formed and which teams handle which ensemble members. It is
- worth noting several details of separate runs which may potentially need altering
- when running ensembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
- variable initialization and allocation, 4) \texttt{STOP}.
-
+\section{Methodology}\label{sec:methodology}
 \subsection{Teams in Fortran 2015}\label{teams-in-fortran-2015}
 The existing coarray definition in Fortran 2008 does not provide for an environment
 where a subset of the images can easily work on part of an application without affecting
@@ -172,7 +133,48 @@ The list of available and used teams are both initialized to team 1 (equivalent 
 \end{figure*}
 %
 \section{Discussion of Results}\label{sec:discussion}
-Discuss the required language extension: \lstinline|get_communicator|
+\subsection{A language extension}
+Discuss \lstinline|get_communicator|
+
+\subsection{Caffeinating WRF-Hydro}
+\gls{wrf-hydro} is a community hydrologic modeling system that provides a parallel-computing
+framework for coupling Numerical Weather Prediction models (\ref{fig:caffeinate-wrf-hydro}a), land surface models
+(\ref{fig:caffeinate-wrf-hydro}b), and a suite of hydrologic routing modules that handle spatial water redistribution
+via surface (overland) flow (\ref{fig:caffeinate-wrf-hydro}c), subsurface (soil column) flow (\ref{fig:caffeinate-wrf-hydro}c),
+baseflow (deep groundwater, \ref{fig:caffeinate-wrf-hydro}d), and stream channel transport
+(\ref{fig:caffeinate-wrf-hydro}e)~\cite{gochisEtal}.
+
+While originally developed to couple land hydrology to the atmospheric processes of
+the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
+coupled to (forced by) prescribed upper boundary (weather)
+conditions (Figure 2a). The chief example is NOAA's operational
+National Water Model~\cite{noaa2016}; a special configuration of
+WRF-Hydro which provides real-time analysis and forecasts of
+hydrologic states over the contiguous U.S (Figure 2).
+
+Ensemble forecasting and ensemble data assimilation are active and
+growing areas of research with WRF-Hydro. Running ensembles under a
+single executable and job submission on HPC platforms as shown in
+Figure 2 can greatly reduce the amount
+of labor involved in designing workflows and can open up new
+possibilities for improving data flows and optimizing ensemble run
+performance. Particularly, we plan to investigate performing shared model
+initialization just once over all teams using the full number of
+images prior to forming teams. Communicating the shared initialization
+to each team should provide
+
+Going from a deterministic run
+
+
+In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
+over the individual ensemble members. The number of images per team and the
+ number of ensemble members are specified in a namelist. Along with
+ the number of available images, these parameters determine how many
+ teams are formed and which teams handle which ensemble members. It is
+ worth noting several details of separate runs which may potentially need altering
+ when running ensembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
+ variable initialization and allocation, 4) \texttt{STOP}.
+
 %Although each point in the phase space of interest represents an independent simulation, much of the problem
 %initiationalion remains invariant across the parameter space.  One therefore expects to achieve considerable reductions in
 %execution time by amortizing the initialization across all available computational resources rather than repeating common
