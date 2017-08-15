@@ -1,11 +1,11 @@
 \section{Introduction}
 \subsection{Motivation and Background}
-Since the publication of the Fortran 2008 standard in 2010~\cite{iso2010information}), Fortran supports a \gls{spmd} programming style
-that facilitates the creation of a fixed number of replicas of a compiled program that execute asynchronously after creation.
-Fortran refers to each replica as an image.  The primary mechanism for distributing and communicating data between
-images involves defining \glspl{coarray}, entities that may be referenced or defined on one image by statements executing on
-other images. As such, a coarray defines a \gls{pgas} and one image referencing or defining a coarray entity on another image
-necessites inter-image communication of program data.
+Since the publication of the Fortran 2008 standard in 2010~\cite{iso2010information}), Fortran supports a \gls{spmd}
+programming style that facilitates the creation of a fixed number of replicas of a compiled program, wherein each replica
+executes asynchronously after creation.  Fortran refers to each replica as an image.  The primary mechanism for distributing and
+communicating data between images involves defining \glspl{coarray}, entities that may be referenced or defined on one image by
+statements executing on other images.  As such, a coarray defines a \gls{pgas} in which one image referencing or defining a
+coarray on another image causes inter-image communication.
 
 The seminal role that \glspl{coarray} played in the development of Fortran's intrinsic parallel programming model have made it
 common to refer to all of modern Fortran's parallel programming features under the rubric of \gls{caf}.  To date, most
@@ -18,95 +18,45 @@ expressing parallel algorithms for these domains centers on
  designing and using various \gls{coarray} data structures.  In such settings, the moniker
 \gls{caf} seems appropriate.
 
-Less widely appreciated are the ways in which Fortran's intrinsic parallel programming model supports embarrassingly parallel
-applications: problems in which the division into sub-problems that execute in parallel with little or no coordination between
-the sub-problems.  To support such applications, a parallel programming model might provide for the explicit disaggregation
-and independent execution of sub-problems in ways that do not require the user to declare, reference, or define \glspl{coarray}.
-The upcoming Fortran 2015 standard (expected to be published in 2018\footnote{A Committee Draft is at
-https://bit.ly/fortran-2015-draft.}) will provide several features that enable a considerable amount of parallel computation
-without the use of \glspl{coarray}.  These include the ability to declare teams of images that communicate only within their teams by default.
+Less widely appreciated are the ways in which Fortran's intrinsic parallel programming model supports embarassingly parallel
+applications: problems in which the division into independent sub-problems requires little or no coordination between the
+the sub-problems. To support such applications, a parallel programming
+model might provide for explicit sub-problem disaggregation and independent sub-problem execution without any need for \glspl{coarray}.  The upcoming Fortran 2015 standard
+(expected to be published in 2018\footnote{A Committee Draft is at https://bit.ly/fortran-2015-draft.}) will provide several
+features that enable a considerable amount of parallel computation, coordination, and even some data communication
+without the use of \glspl{coarray}.  In the context of \gls{caf}, we propose a working definition of ``embarassingly parallel''
+as denoting the class of parallel applications for which Fortran's non-\gls{coarray} parallel features cover all of the
+application's algorithmic needs.
 
-In the context of \gls{caf}, we propose a working definition of ``embarrassingly parallel'' as denoting the class of parallel
-applications that can be addressed without the need for \glspl{coarray}.  In addition to the ability to form teams, Fortran
-2015 supports this application class with mechanisms for ordering program segments in differing images; collective subroutines
-containing highly optimized implementations of common parallel communication and computation patterns; and global error
-termination.  We anticipate that a common teams use case for these capabilities will involve running an ensemble of simulations,
-concurrent execution of ensemble members being handled by separate teams.  This paper presents such a use case in the context of a terrestrial
-hydrological model developed at \gls{ncar}: \gls{wrf-hydro}.
+Fortran's non-\gls{coarray} parallel features include
+\begin{itemize}
+   \item the ability to form teams of images that communicate only with each other by default,
+   \item mechanisms for ordering program segments in differing images (image synchronization),
+   \item collective subroutines containing highly optimized implementations of common parallel
+         communication and computation patterns;
+   \item functions that return an image identificier and the number of images.
+   \item global error termination.
+\end{itemize}
+We anticipate that a common use case for these capabilities will involve running an ensemble of simulations, each member of
+which executes in a separate team.  This paper presents such a use case in the context of \gls{wrf-hydro}, a terrestrial
+hydrological model developed at \gls{ncar}.
 
-For the work described herein, we wrote what we believe to be the first compiler and runtime-library implementations of Fortran
-2015 teams.  In addition to providing an open-source platform for studying the application of teams, our implementation offers a
-language extension that assists with incrementally introducing
-\gls{caf} into existing \gls{mpi} applications when using teams.
-Section~\ref{sec:objectives} of this paper details the objectives for using teams in \gls{wrf-hydro}.
-Section~\ref{sec:methodology} provides an overview of teams in Fortran 2015, the open-source \gls{gcc} fork we established to
-supports teams, and the \gls{wrf-hydro} teams use case.
-
-%% JLM: The above sections listed are actually in a different order below. I kind of like discussing the application first, personally.
-
-%% JLM: Do we want ro reorder the figures if we stick with WRF-Hydro first in the methodology?
 
 \subsection{Objectives}\label{sec:objectives}
-The immediate objectives of this work are to:
+The objectives of the current work are threefold:
 \begin{enumerate}
-  \item Run WRF-Hydro ensembles within a single fortran executable.
-  \item Allow for migration of WRF-Hydro model code from MPI to CAF in the future.
+  \item To contribute the first-ever compiler front-end support for Fortran 2015 teams.
+  \item To contribute the parallel runtime library functionality required to support the new compiler capabilities.
+  \item To study and address issues arising form integrating teams into an existing \gls{mpi} application, \gls{wrf-hydro}, for purposes of driving ensembles of simulations.
 \end{enumerate}
+In addition to providing an open-source platform for studying the application of teams in a public fork of \gls{gcc},  the
+supporting OpenCoarrays branch offers a language extension that assists with incrementally introducing \gls{caf} into existing
+\gls{mpi} applications.  Section~\ref{sec:methodology} provides an overview of Fortran 2015 teams, the teams support in the
+\gls{gcc} fork and the OpenCoarrays branch developed for the current project, and the use of teams in \gls{wrf-hydro}.
+Section~\ref{sec:discussion} discusses the results of this effort. Section~\ref{sec:conclusions} summarizes our conclusions
+and describes plans for future work.
 
-These immediate goals lay the foundation for exploring code
-restructuring aimed at amortizing common model initialization across
-all available computational resources rather than repeating common
-aspects of the initialization in each ensemble member using only that
-member's fraction of the hardware resources available to
-each. 
-
-\section{Methodology}
-\subsection{Teams use in WRF-Hydro}
-
-WRF-Hydro is a community hydrologic modeling system developed at the
-National Center for Atmospheric Research.  WRF-Hydro provides a
-parallel-computing framework for coupling Numerical Weather Prediction
-models (Figure 2a), land surface models (Figure 2b), and a suite of hydrologic routing modules that handle
-spatial water redistribution via surface (overland) flow (Figure 2c),
-subsurface (soil column) flow (Figure 2c), baseflow (deep groundwater,
-Figure 2d), and stream
-channel transport (Figure 2e)~\cite{gochisEtal}.
-
-While originally developed to couple land hydrology to the atmospheric processes of
-the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
-coupled to (forced by) prescribed upper boundary (weather)
-conditions (Figure 2a). The chief example is NOAA's operational
-National Water Model~\cite{noaa2016}; a special configuration of
-WRF-Hydro which provides real-time analysis and forecasts of
-hydrologic states over the contiguous U.S (Figure 2).
-
-
-Ensemble forecasting and ensemble data assimilation are active and
-growing areas of research with WRF-Hydro. Running ensembles under a
-single executable and job submission on HPC platforms as shown in
-Figure ? can greatly reduce the amount of labor involved in designing
-workflows and can open up new
-possibilities for improving data flows and optimizing ensemble run
-performance. Particularly, we plan to investigate performing shared model
-initialization just once the full number of images prior to forming teams. Communicating the shared initialization
-to each team should provide particular computational savings for
-ensemble model runs where initialization comprises a large fraction of
-the total run time. 
-
-
-
-Going from a deterministic run to an ensemble run.
-
-
-In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
-over the individual ensemble members. The number of images per team and the
- number of ensemble members are specified in a namelist. Along with
- the number of available images, these parameters determine how many
- teams are formed and which teams handle which ensemble members. It is
- worth noting several details of separate runs which may potentially need altering
- when running ensembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
- variable initialization and allocation, 4) \texttt{STOP}.   
-
+\section{Methodology}\ref{sec:methodology}
 \subsection{Teams in Fortran 2015}\label{teams-in-fortran-2015}
 The existing coarray definition in Fortran 2008 does not provide for an environment
 where a subset of the images can easily work on part of an application without affecting
@@ -182,11 +132,64 @@ The list of available and used teams are both initialized to team 1 (equivalent 
   simulation and forecasting. The work presented  here supports for ``partial model caffeination'' with grouped
   parallelism (CAF teams): the underlying WRF-Hydro Model Chain
   originally under MPI can be transitioned incrementally towards CAF
-  over time}
+  over time\label{fig:caffeinate-wrf-hydro}}
 \end{figure*}
 %
-\section{Discussion of Results}
-\section{Conclusions}
+\section{Discussion of Results}\label{sec:discussion}
+\gls{wrf-hydro} is a community hydrologic modeling system that provides a parallel-computing
+framework for coupling Numerical Weather Prediction models (\ref{fig:caffeinate-wrf-hydro}a), land surface models
+(\ref{fig:caffeinate-wrf-hydro}b), and a suite of hydrologic routing modules that handle spatial water redistribution
+via surface (overland) flow (\ref{fig:caffeinate-wrf-hydro}c), subsurface (soil column) flow (\ref{fig:caffeinate-wrf-hydro}c),
+baseflow (deep groundwater, \ref{fig:caffeinate-wrf-hydro}d), and stream channel transport
+(\ref{fig:caffeinate-wrf-hydro}e)~\cite{gochisEtal2014}.
+
+While originally developed to couple land hydrology to the atmospheric processes of
+the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
+coupled to (forced by) prescribed upper boundary (weather)
+conditions (Figure 2a). The chief example is NOAA's operational
+National Water Model~\cite{noaa2016}; a special configuration of
+WRF-Hydro which provides real-time analysis and forecasts of
+hydrologic states over the contiguous U.S (Figure 2).
+
+
+Ensemble forecasting and ensemble data assimilation are active and
+growing areas of research with WRF-Hydro. Running ensembles under a
+single executable and job submission on HPC platforms as shown in
+Figure ? can greatly reduce the amount of labor involved in designing
+workflows and can open up new
+possibilities for improving data flows and optimizing ensemble run
+performance. Particularly, we plan to investigate performing shared model
+
+initialization just once the full number of images prior to forming teams. Communicating the shared initialization
+to each team should provide particular computational savings for
+ensemble model runs where initialization comprises a large fraction of
+the total run time. 
+
+These immediate goals lay the foundation for exploring code
+restructuring aimed at amortizing common model initialization across
+all available computational resources rather than repeating common  
+aspects of the initialization in each ensemble member using only that
+member's fraction of the hardware resources available to
+each. 
+
+Going from a deterministic run to an ensemble run.
+
+
+Discuss the required language extension: \lstinline|get_communicator|
+
+
+In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
+over the individual ensemble members. The number of images per team and the
+ number of ensemble members are specified in a namelist. Along with
+ the number of available images, these parameters determine how many
+ teams are formed and which teams handle which ensemble members. It is
+ worth noting several details of separate runs which may potentially need altering
+ when running ensembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
+ variable initialization and allocation, 4) \texttt{STOP}.
+
+
+
+\section{Conclusions and Future Work}\label{sec:conclusions}
 
 %%%
 %%% Sample tables
