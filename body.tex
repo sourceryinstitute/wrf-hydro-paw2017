@@ -1,65 +1,66 @@
 \section{Introduction}
 \subsection{Motivation and Background}
-Since the publication of the Fortran 2008 in 2010~\cite{iso2010information}), Fortran supports a \gls{spmd} programming style
-that facilitates the creation of a fixed number of replicas of a compiled program that execute asynchronously after creation.
-Fortran refers to each replica as an image.  The primary mechanism for distributing and communicating data between
-images involves defining \glspl{coarray}, entities that may be referenced or defined on one image by statements executing on
-other images. As such, a coarray defines a \gls{pgas} and one image referencing or defining a coarray entity on another image
-necessites inter-image communication of program data.
+Since the publication of the Fortran 2008 standard in 2010~\cite{iso2010information}), Fortran supports a \gls{spmd}
+programming style that facilitates the creation of a fixed number of replicas of a compiled program, wherein each replica
+executes asynchronously after creation.  Fortran refers to each replica as an image.  The primary mechanism for distributing and
+communicating data between images involves defining \glspl{coarray}, entities that may be referenced or defined on one image by
+statements executing on other images.  As such, a coarray defines a \gls{pgas} in which one image referencing or defining a
+coarray on another image causes inter-image communication.
 
 The seminal role that \glspl{coarray} played in the development of Fortran's intrinsic parallel programming model have made it
 common to refer to all of modern Fortran's parallel programming features under the rubric of \gls{caf}.  To date, most
 published disucssions \gls{caf} in applications involve scenarios wherein the parallelization itself poses one of the chief
-challenges and necessitates the custom development of parallel algorithms.  These include ordinary and partial differential
-equation solvers in domains ranging from nuclear fusion~\cite{preissl2011multithreaded} and
-weather~\cite{mozdzynski2015partitioned} to multidimensional fast Fourier transforms and multigrid numerical
-methods~\cite{garain2015comparing}.  Much of the effort involved in expressing parallel algorithms for these domains centers
- using \gls{caf} centers around designing and using various \gls{coarray} data structures.  In such settings, the moniker
-\gls{caf} seems appropriate.
+challenges and necessitates custom parallel algorithm development.  These include ordinary and partial differential equation
+solvers in domains ranging from nuclear fusion~\cite{preissl2011multithreaded} and weather~\cite{mozdzynski2015partitioned}
+to multidimensional fast Fourier transforms and multigrid numerical methods~\cite{garain2015comparing}.  Much of the effort
+involved in expressing parallel algorithms for these domains centers around designing and using various \gls{coarray} data
+structures.  In such settings, the moniker \gls{caf} seems appropriate.
 
 Less widely appreciated are the ways in which Fortran's intrinsic parallel programming model supports embarassingly parallel
-applications: problems in which the division into sub-problems that execute in parallel with little or no coordination between
-the sub-problems.  To support such applicaitons, a parallel programming model might provide for the explicit disaggregation
-and independent execution of sub-problems in ways that do not require the user to declare, reference, or define \glspl{coarray}.
-The upcoming Fortran 2015 standard (expected to be published in 2018\footnote{A Committee Draft is at
-https://bit.ly/fortran-2015-draft.}) will provide several features that enable a considerable amount of parallel computation
-without the use of \glspl{coarray}.  These include the ability to declare teams of images that communicate only with each
-other by default.
+applications: problems in which the division into independent sub-problems requires little or no coordination between the
+the sub-problems.  To support such applications, a parallel programming model might provide for explicit sub-problem
+disaggregation and independent sub-problem execution without any need for \glspl{coarray}.  The upcoming Fortran 2015 standard
+(expected to be published in 2018\footnote{A Committee Draft is at https://bit.ly/fortran-2015-draft.}) will provide several
+features that enable a considerable amount of parallel computation, coordination, and even some data communication
+without the use of \glspl{coarray}.  In the context of \gls{caf}, we propose a working definition of ``embarassingly parallel''
+as denoting the class of parallel applications for which Fortran's non-\gls{coarray} parallel features cover all of the
+application's algorithmic needs.
 
-In the context of \gls{caf}, we propose a working definition of ``embarassingly parallel'' as denoting the class of parallel
-applications that can be addressed without the need for \glspl{coarray}.  In addition to the ability to form teams, Fortran
-2015 supports this application class with mechanisms for ordering program segments in differing images; collective subroutines
-containing highly optimized implementations of common parallel communication and computation patterns; and global error
-termination.  We anticipate that a common teams use case for these capabilities will involve running an ensemble of simulations,
-each member of which executes in a separate team.  This paper presents such a use case in the context of a terrestrial
-hydrological model developed at \gls{ncar}: the \gls{wrf-hydro}.
-
-For the work described herein, we wrote what we believe to be the first compiler and runtime-library implementations of Fortran
-2015 teams.  In addition to providing an open-source platform for studying the application of teams, our implementation offers a
-language extension that assists with incrementally introducing \gls{caf} into existing \gls{mpi} applications.
-Section~\ref{sec:objectives} of this paper details the objectives for using teams in \gls{wrf-hydro}.
-Section~\ref{sec:methodology} provides an overview of teams in Fortran 2015, the open-source \gls{gcc} fork we established to
-supports teams, and the \gls{wrf-hydro} teams use case.
+Fortran's non-\gls{coarray} parallel features include
+\begin{itemize}
+   \item the ability to form teams of images that communicate only with each other by default,
+   \item mechanisms for ordering program segments in differing images (image synchronization),
+   \item collective subroutines containing highly optimized implementations of common parallel
+         communication and computation patterns;
+   \item functions that return an image identificier and the number of images.
+   \item global error termination.
+\end{itemize}
+We anticipate that a common use case for these capabilities will involve running an ensemble of simulations, each member of
+which executes in a separate team.  This paper presents such a use case in the context of \gls{wrf-hydro}, a terrestrial
+hydrological model developed at \gls{ncar}.
 
 \subsection{Objectives}\label{sec:objectives}
-For both validation purposes and production use, multiple instances of \gls{wrf-hydro} often run on a parametric family of
-input data.  Although each point in the phase space of interest represents an independent simulation, much of the problem
-initiationalion remains invariant across the parameter space.  One therefore expects to achieve considerable reductions in
-execution time by amortizing the initialization across all available computational resources rather than repeating common
-aspects of the initialzation in each ensemble member using only that member's fraction of the hardware resources available to
-each. Section~\ref{sec:discussion} pre
+The objectives of the current work are threefold:
+\begin{enumerate}
+  \item To contribute the first-ever compiler front-end support for Fortran 2015 teams.
+  \item To contribute the parallel runtime library functionality required to support the new compiler capabilities.
+  \item To study and address issues arising form integrating teams into an existing \gls{mpi} application, \gls{wrf-hydro}, for purposes of driving ensembles of simulations.
+\end{enumerate}
+In addition to providing an open-source platform for studying the application of teams in a public fork of \gls{gcc},  the
+supporting OpenCoarrays branch offers a language extension that assists with incrementally introducing \gls{caf} into existing
+\gls{mpi} applications.  Section~\ref{sec:methodology} provides an overview of Fortran 2015 teams, the teams support in the
+\gls{gcc} fork and the OpenCoarrays branch developed for the current project, and the use of teams in \gls{wrf-hydro}.
+Section~\ref{sec:discussion} discusses the results of this effort. Section~\ref{sec:conclusions} summarizes our conclusions
+and describes plans for future work.
 
-\section{Methodology}
-\subsection{Teams use in WRF-Hydro}
-
-WRF-Hydro is a community hydrologic modeling system developed at the
-National Center for Atmospheric Research.  WRF-Hydro provides a
-parallel-computing framework for coupling Numerical Weather Prediction
-models (Figure 2a), land surface models (Figure 2b), and a suite of hydrologic routing modules that handle
-spatial water redistribution via surface (overland) flow (Figure 2c),
-subsurface (soil column) flow (Figure 2c), baseflow (deep groundwater,
-Figure 2d), and stream
-channel transport (Figure 2e)~\cite{gochisEtal}.
+\section{Methodology}\ref{sec:methodology}
+\subsection{Teams in WRF-Hydro}
+\gls{wrf-hydro} is a community hydrologic modeling system that provides a parallel-computing
+framework for coupling Numerical Weather Prediction models (\ref{fig:caffeinate-wrf-hydro}a), land surface models
+(\ref{fig:caffeinate-wrf-hydro}b), and a suite of hydrologic routing modules that handle spatial water redistribution
+via surface (overland) flow (\ref{fig:caffeinate-wrf-hydro}c), subsurface (soil column) flow (\ref{fig:caffeinate-wrf-hydro}c),
+baseflow (deep groundwater, \ref{fig:caffeinate-wrf-hydro}d), and stream channel transport
+(\ref{fig:caffeinate-wrf-hydro}e)~\cite{gochisEtal}.
 
 While originally developed to couple land hydrology to the atmospheric processes of
 the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
@@ -145,7 +146,7 @@ The list of available and used teams are both initialized to team 1 (equivalent 
 \begin{figure*}
 \includegraphics[width=0.7\textwidth]{figures/teams}
 \vspace{-36pt}
-\caption{Schematic depiction of a Fortran program executing over time (left axis) in 12 images (top) thatcommunicate with each other through global means (black horizontal bar) and later communicating within subgroups (colored horizontal bars).  Horizontal lines represent the communication mechanisms (default=solid, optional=dashed).  Fortran concepts or on the left.  The underlying \gls{mpi} concepts are the right.}
+\caption{Schematic depiction of a Fortran program executing over time (left axis) in 12 images (top) thatcommunicate with each other through global means (black horizontal bar) and later communicating within subgroups (colored horizontal bars).  Horizontal lines represent the communication mechanisms (default=solid, optional=dashed).  Fortran concepts or on the left.  The underlying \gls{mpi} concepts are the right.\label{fig:teams-schematic}}
 \end{figure*}
 %
 
@@ -160,11 +161,19 @@ The list of available and used teams are both initialized to team 1 (equivalent 
   simulation and forecasting. The work presented  here supports for ``partial model caffeination'' with grouped
   paralleism (CAF teams): the underlying WRF-Hydro Model Chain
   originally under MPI can be transitioned incrementally towards CAF
-  over time}
+  over time\label{fig:caffeinate-wrf-hydro}}
 \end{figure*}
 %
-\section{Discussion of Results}
-\section{Conclusions}
+\section{Discussion of Results}\label{sec:discussion}
+Discuss the required language extension: \lstinline|get_communicator|
+%Although each point in the phase space of interest represents an independent simulation, much of the problem
+%initiationalion remains invariant across the parameter space.  One therefore expects to achieve considerable reductions in
+%execution time by amortizing the initialization across all available computational resources rather than repeating common
+%aspects of the initialzation in each ensemble member using only that member's fraction of the hardware resources available to
+%each.
+
+
+\section{Conclusions and Future Work}\label{sec:conclusions}
 
 %%%
 %%% Sample tables
