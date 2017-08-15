@@ -1,9 +1,52 @@
 \documentclass[sigconf, authordraft]{acmart}
 
+\usepackage{listings}
 \usepackage{booktabs} % For formal tables
 
 \usepackage[acronym,nonumberlist]{glossaries}
 \makeglossaries
+
+\lstdefinelanguage{Fortran2015}{%
+  language     = [08]Fortran,
+  morekeywords = {
+    co_sum,
+    co_broadcast,
+    co_min,
+    co_max,
+    co_reduce,
+    event_type,
+    event_query,
+    event wait,
+    event post,
+    team_umber,
+    team_type,
+    form team,
+    change team,
+    end team,
+  },
+}
+
+\lstset{ %
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  frame=single,                    % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  language=Fortran2015,            % the language of the code
+  morekeywords={procedure,iso_fortran_env},  % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny,               % the style that is used for the line-numbers
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  keywordstyle=\color{brown}\ttfamily,
+  commentstyle=\color{cyan}\ttfamily,
+  stringstyle=\color{orange}\ttfamily,
+  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
 
 
 % Copyright
@@ -42,6 +85,7 @@
 %\subtitle{Extended Abstract}
 %\subtitlenote{The full version of the author's guide is available as
 %  \texttt{acmart.pdf} document}
+
 
 \author{Damian Rouson}
 \orcid{0000-0002-2234-868X}
@@ -83,7 +127,7 @@ We present a coarray Fortran (CAF) use case involving the initial steps in trans
 a moderately large production code from using the Message Passing Interface (MPI)
 to using mixed CAF/MPI.  In particular, we exploit recently developed support for
 Fortran 2015 process teaming to demonstrate how to replace job scripts previously
-used to launch ensemble runs of the WRF-Hydro hydrological model developed
+used to launch ensemble runs of the \gls{wrf-hydro} hydrological model developed
 at the National Center for Atmospheric Research.  For this purpose, we developed the
 first implementation of compiler and parallel runtime library support for Fortran 2015
 teams using a public fork of the GNU Compiler Collection (GCC) Fortran front end and
