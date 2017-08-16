@@ -225,7 +225,13 @@ over the individual ensemble members. The number of images per team and the
  teams are formed and which teams handle which ensemble members. It is
  worth noting several details of separate runs which may potentially need altering
  when running ensembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
- variable initialization and allocation, 4) \texttt{STOP}. 
+ variable initialization and allocation, 4) \texttt{STOP}. We have
+ already identified the potential for shared model initialization
+ prior to the forming of teams for the embarrassingly parallel
+ calculations. We expect other design choices which surface with
+ further experience programming under the teams functionality.  
+
+
 
 \subsection{A language extension}
 Discuss \lstinline|get_communicator|
