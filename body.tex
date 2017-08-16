@@ -1,6 +1,6 @@
 \section{Introduction}
 \subsection{Motivation and Background}
-Since the publication of the Fortran 2008 standard in 2010~\cite{iso2010information}), Fortran supports a \gls{spmd}
+Since the publication of the Fortran 2008 standard in 2010~\cite{iso2010information}, Fortran supports a \gls{spmd}
 programming style that facilitates the creation of a fixed number of replicas of a compiled program, wherein each replica
 executes asynchronously after creation.  Fortran refers to each replica as an image.  The primary mechanism for distributing and
 communicating data between images involves defining \glspl{coarray}, entities that may be referenced or defined on one image by
@@ -19,14 +19,14 @@ expressing parallel algorithms for these domains centers on
 \gls{caf} seems appropriate.
 
 Less widely appreciated are the ways in which Fortran's intrinsic parallel programming model supports embarassingly parallel
-applications: problems in which the division into independent sub-problems requires little or no coordination between the
+applications, wherein the division into independent sub-problems requires little or no coordination between the
 the sub-problems. To support such applications, a parallel programming
 model might provide for explicit sub-problem disaggregation and independent sub-problem execution without any need for \glspl{coarray}.  The upcoming Fortran 2015 standard
 (expected to be published in 2018\footnote{A Committee Draft is at https://bit.ly/fortran-2015-draft.}) will provide several
 features that enable a considerable amount of parallel computation, coordination, and even some data communication
 without the use of \glspl{coarray}.  In the context of \gls{caf}, we propose a working definition of ``embarassingly parallel''
 as denoting the class of parallel applications for which Fortran's non-\gls{coarray} parallel features cover all of the
-application's algorithmic needs.
+application's parallel algorithmic needs.
 
 Fortran's non-\gls{coarray} parallel features include
 \begin{itemize}
@@ -34,7 +34,7 @@ Fortran's non-\gls{coarray} parallel features include
    \item mechanisms for ordering program segments in differing images (image synchronization),
    \item collective subroutines containing highly optimized implementations of common parallel
          communication and computation patterns;
-   \item functions that return an image identificier and the number of images.
+   \item functions that return an image identifier and the number of images.
    \item global error termination.
 \end{itemize}
 We anticipate that a common use case for these capabilities will involve running an ensemble of simulations, each member of
@@ -49,12 +49,14 @@ The objectives of the current work are threefold:
   \item To contribute the parallel runtime library functionality required to support the new compiler capabilities.
   \item To study and address issues arising form integrating teams into an existing \gls{mpi} application, \gls{wrf-hydro}, for purposes of driving ensembles of simulations.
 \end{enumerate}
-In addition to providing an open-source platform for studying the application of teams in a public fork of \gls{gcc},  the
-supporting OpenCoarrays branch offers a language extension that assists with incrementally introducing \gls{caf} into existing
-\gls{mpi} applications.  Section~\ref{sec:methodology} provides an overview of Fortran 2015 teams, the teams support in the
-\gls{gcc} fork and the OpenCoarrays branch developed for the current project, and the use of teams in \gls{wrf-hydro}.
-Section~\ref{sec:discussion} discusses the results of this effort. Section~\ref{sec:conclusions} summarizes our conclusions
-and describes plans for future work.
+The compiler front-end described in this paper lives on the teams branch of the
+\fnurl{Sourcery Institute \gls{gcc} fork}{https://github.com/sourceryinstitute/gcc}. The parallel runtime libary lives on the
+opencoarrays-teams branch of the \fnurl{OpenCoarrays \gls{abi}}{https://github.com/sourceryinstitute/opencoarrays}.
+
+The remainder of this paper is organized as follows: Section~\ref{sec:methodology} provides an overview of teams and their
+support in the aforementedioned \gls{gcc} fork and in OpenCoarrays.  Section~\ref{sec:discussion} discusses the use of teams
+in \gls{wrf-hydro} and a required language extension. Section~\ref{sec:conclusions} summarizes our conclusions and plans for
+future work.
 
 \section{Methodology}\label{sec:methodology}
 \subsection{Teams in Fortran 2015}\label{teams-in-fortran-2015}
