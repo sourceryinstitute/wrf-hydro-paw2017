@@ -163,6 +163,14 @@ of labor involved in designing workflows and can open up new
 possibilities for improving data flows and optimizing ensemble run
 performance.
 
+\begin{figure*}
+\includegraphics[width=0.7\textwidth]{figures/init_timing_linear.png}
+\vspace{-7pt}
+\caption{Scaling of the channel-only model initialization time to
+  support calculation of Amdhal's law for estimating potential of
+  saved compuation times \label{fig:wrf-hydro-init-scaling}}
+\end{figure*}
+
 Particularly, we plan to investigate restructuring the code to perform
 model initialization which is shared over all ensemble members using
 the full number of images prior to forming teams. Amortizing common
@@ -174,21 +182,27 @@ ensemble model runs where initialization comprises a large fraction of
 the total run time. Such an example is in the production run of the
 National Water Model short-term forecasts. Here we are currently
 researching the possibility of moving from the current deterministic
-(single ensemble member) model run to an ensemble run. Currently the
-full initialization requires approximately 50\% of the run time on
+(single ensemble member) model run to an ensemble run for the stream
+channel submodel run in isolation. Scaling of the
+initialization of the channel-only model is presented in
+\ref{fig:wrf-hydro-init-scaling}. If 50 ensemble members are run concurrently with
+teams occupying 20 cores each, the initialization speedup will be
+approximately 20x. Currently, for the short-range forecasts, 
+initialization requires approximately 50\% of the run time on
 NCAR's yellowstone computer and greater than that on NOAA's WCOSS
-system~\cite{yuetal2017}. In this application for an ensemble size of 50, we estimate that
+system~\cite{yuetal2017}. These numbers are
+similar for the channel-only model. In our proposed application for an ensemble size of 50, we estimate that
 approximately half the runtime ($f=.5$) can be sped up by a factor of
-49 (the ensemble size -1, $S_f=49$). Amdhal's law yields a total speedup
-of 2 running with 50 ensemble members
+about 20 ( $S_f=20$), based on \ref{fig:wrf-hydro-init_scaling}. From
+these estimates, Amdhal\'s law yields a total speedup
+of 1.9:
 
 \begin{equation}
-S = 1 / { f/S_f + (1-f) } = 1 / (.5/49 + (1-.5)) = 1.96
+S = 1 / { f/S_f + (1-f) } = 1 / (.5/20 + (1-.5)) = 1.9
 \end{equation}
 
-The assumption $S_f=49$ is justified because the particular subcompnents of
-the model targeted in the application can run on very few processors while the
-initialization is memory-limited.
+Obtaining a factor of 2 speed up for running ensembles by using CAF
+teams and restructuring the initialization has   
 
 In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
 over the individual ensemble members. The number of images per team and the
