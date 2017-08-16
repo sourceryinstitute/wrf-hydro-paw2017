@@ -1,6 +1,6 @@
 \section{Introduction}
 \subsection{Motivation and Background}
-Since the publication of the Fortran 2008 standard in 2010~\cite{iso2010information}), Fortran supports a \gls{spmd}
+Since the publication of the Fortran 2008 standard in 2010~\cite{iso2010information}, Fortran supports a \gls{spmd}
 programming style that facilitates the creation of a fixed number of replicas of a compiled program, wherein each replica
 executes asynchronously after creation.  Fortran refers to each replica as an image.  The primary mechanism for distributing and
 communicating data between images involves defining \glspl{coarray}, entities that may be referenced or defined on one image by
@@ -19,14 +19,14 @@ expressing parallel algorithms for these domains centers on
 \gls{caf} seems appropriate.
 
 Less widely appreciated are the ways in which Fortran's intrinsic parallel programming model supports embarassingly parallel
-applications: problems in which the division into independent sub-problems requires little or no coordination between the
+applications, wherein the division into independent sub-problems requires little or no coordination between the
 the sub-problems. To support such applications, a parallel programming
 model might provide for explicit sub-problem disaggregation and independent sub-problem execution without any need for \glspl{coarray}.  The upcoming Fortran 2015 standard
 (expected to be published in 2018\footnote{A Committee Draft is at https://bit.ly/fortran-2015-draft.}) will provide several
 features that enable a considerable amount of parallel computation, coordination, and even some data communication
 without the use of \glspl{coarray}.  In the context of \gls{caf}, we propose a working definition of ``embarassingly parallel''
 as denoting the class of parallel applications for which Fortran's non-\gls{coarray} parallel features cover all of the
-application's algorithmic needs.
+application's parallel algorithmic needs.
 
 Fortran's non-\gls{coarray} parallel features include
 \begin{itemize}
@@ -34,7 +34,7 @@ Fortran's non-\gls{coarray} parallel features include
    \item mechanisms for ordering program segments in differing images (image synchronization),
    \item collective subroutines containing highly optimized implementations of common parallel
          communication and computation patterns;
-   \item functions that return an image identificier and the number of images.
+   \item functions that return an image identifier and the number of images.
    \item global error termination.
 \end{itemize}
 We anticipate that a common use case for these capabilities will involve running an ensemble of simulations, each member of
@@ -47,69 +47,79 @@ The objectives of the current work are threefold:
 \begin{enumerate}
   \item To contribute the first-ever compiler front-end support for Fortran 2015 teams.
   \item To contribute the parallel runtime library functionality required to support the new compiler capabilities.
-  \item To study and address issues arising form integrating teams into an existing \gls{mpi} application, \gls{wrf-hydro}, for purposes of driving ensembles of simulations.
+  \item To study and address issues arising form integrating teams into an existing \gls{mpi} application, \gls{wrf-hydro},
+        for purposes of driving ensembles of simulations.
 \end{enumerate}
-In addition to providing an open-source platform for studying the application of teams in a public fork of \gls{gcc},  the
-supporting OpenCoarrays branch offers a language extension that assists with incrementally introducing \gls{caf} into existing
-\gls{mpi} applications.  Section~\ref{sec:methodology} provides an overview of Fortran 2015 teams, the teams support in the
-\gls{gcc} fork and the OpenCoarrays branch developed for the current project, and the use of teams in \gls{wrf-hydro}.
-Section~\ref{sec:discussion} discusses the results of this effort. Section~\ref{sec:conclusions} summarizes our conclusions
-and describes plans for future work.
+The compiler front-end described in this paper lives on the teams branch of the
+\fnurl{Sourcery Institute \gls{gcc} fork}{https://github.com/sourceryinstitute/gcc}. The parallel runtime libary lives on the
+opencoarrays-teams branch of the \fnurl{OpenCoarrays \gls{abi}}{https://github.com/sourceryinstitute/opencoarrays}.
+
+The remainder of this paper is organized as follows: Section~\ref{sec:methodology} provides an overview of teams and their
+support in the aforementedioned \gls{gcc} fork and in OpenCoarrays.  Section~\ref{sec:discussion} discusses the use of teams
+in \gls{wrf-hydro} and a required language extension. Section~\ref{sec:conclusions} summarizes our conclusions and plans for
+future work.
 
 \section{Methodology}\label{sec:methodology}
 \subsection{Teams in Fortran 2015}\label{teams-in-fortran-2015}
-The existing coarray definition in Fortran 2008 does not provide for an environment
-where a subset of the images can easily work on part of an application without affecting
+The Fortran 2008 parallel programming features do not provide for an environment in which
+subset of the images can easily work on part of an application without affecting
 other images in the program.  Grouping the images of a program into nonoverlapping
 teams allows one to execute more effectively and independently parts of a larger
 problem.  A class of problems that can benefit from this feature is multiphysics codes
-(e.g.  climate models).
-Such a feature, called \textit{Teams} in the Fortran 2015 standard, can significantly reduce the amount of off-node
-communication on an exascale machine, in particular when an entire team of images
+(e.g.,  climate models).
+Such a feature, called \textit{Teams} in the Committee Draft of the Fortran 2015 standard, can significantly
+reduce the amount of off-node communication on an exascale machine, in particular when an entire team of images
 fits within a single compute node.
-So far, the only compiler with a partial support for this new feature is the GNU Fortran Compiler (from now on
-called GFortran) and a special version of the OpenCoarrays library.
-In this Section we are going to introduce the basic constructs of \textit{Teams} and how OpenCoarrays implements them.
+The authors are unaware of any compiler support for this new feature other than that developed in the aforementioned
+\gls{gcc} fork and \gls{abi} branch developed for the current project.  The remainder of the current section
+provides an overview of the \textit{Teams} concept, the associated languager syntax, and the the compiler/\gls{abi}
+implementation.
 
-A team of images is a set of images that can readily execute independently of other images.
-Initially, the current team consists of all images and this is
-known as the initial team. Except for the initial team, every team has a unique parent team. A team is divided
-into new teams by executing a \texttt{FORM TEAM} statement.
-Each new team is identified by an integer value known
-as its team number. Information about the team to which the current image belongs can be determined by the
+A team is a set of images that can readily execute independently of other images outside the team.
+At program launch, all images comprise a team designated by a language-defined integer identifier \texttt{initial\_team}.
+Except for the initial team, every team has a parent team assigned in a one-to-many parent/child hierarchy.
+A program executes a \texttt{form team} statement to divide the current team into new child teams.
+Each new team has an integer identifer that Fortran produces as the result of invoking the \texttt{team\_number()}
+intrinsic function.  Information about the team to which the current image belongs can be determined by the
 processor from the collective value of the team variables on the images of the team.
-The \texttt{FORM TEAM} statement is a collective operation executed by all the images.
+All images execute the \texttt{form team} statement as a collective operation.
 
-During execution, each image has a current team, which is only changed by execution of \texttt{CHANGE TEAM} and
-\texttt{END TEAM} statements. Executing a \texttt{CHANGE TEAM} statement changes the current team to the team specified
-by the team-variable, and execution of the corresponding \texttt{END TEAM} statement restores the current team back
-to that immediately prior to execution of the \texttt{CHANGE TEAM} statement.
+During execution, each image has a current team, which is only changed by execution of \texttt{change team} and
+\texttt{end team} statements. Executing \texttt{change team} moves the executing image form the current team to a team
+specified by a variable of derived type~\texttt{team\_type}.  Subsequent execution of a corresponding \texttt{end team}
+statement restores the current team back to that team to which it belonged immediately prior to execution of the most
+recent \texttt{change team} statement.
 
-Teams are described by a scalar variable called \texttt{TEAM TYPE}. This variable is a derived type with private components.
-The \texttt{FORM TEAM} statement takes as first argument a team number that uniquely identifies the team and a \texttt{TEAM TYPE}
+Teams are described by a scalar, derived type variable of type \texttt{team\_type}. This derived-type variable has private components.
+The \texttt{form team} statement takes as first argument a \texttt{team\_number} that uniquely identifies the team and a \texttt{team\_type}
 variable as second argument.
-Successful execution of a \texttt{FORM TEAM} statement assigns the team-variable (of type \texttt{TEAM TYPE}) on each
+Successful execution of a \texttt{form team} statement assigns the team-variable (of type \texttt{team type}) on each
 participating image a value that specifies the new team that the image will belong to.
-The \texttt{CHANGE TEAM} statement takes as argument a \texttt{TEAM TYPE} variable that represents the new team to be used as
-current team. The execution of the \texttt{END TEAM} statement restores the current team back
-to that immediately prior to execution of the \texttt{CHANGE TEAM} statement.
+The \texttt{change team} statement takes as argument a \texttt{team type} variable that represents the new team to be used as
+current team. The execution of the \texttt{end team} statement restores the current team back
+to that immediately prior to execution of the \texttt{change team} statement.
 
 \subsection{Teams in \gls{gcc} and OpenCoarrays}\label{subsec:teams-in-gcc}
-
-From an MPI perspective, a Fortran team is comparable to an MPI communicator. The \texttt{FORM TEAM} statement is implemented in OpenCoarrays
-using \texttt{MPI\_Comm\_split} and passing the team id argument as \textit{color} for \texttt{MPI\_Comm\_split}.
+From an MPI perspective, a Fortran team is comparable to an MPI communicator. The \texttt{form team} statement is implemented in OpenCoarrays
+using \texttt{MPI\_Comm\_split} and passing the team id argument as \texttt{color} for \texttt{MPI\_Comm\_split}.
 In case of success, the resulting communicator is stored into a list of available teams.
-Every element of the list keeps track of the association of team id and actual MPI communicator.
-The elements of the list of available teams gets returned by the function and stored into the \texttt{TEAM TYPE} variable.
+Every element of the list keeps track of the association of team identifier and a MPI communicator.
+The elements of the list of available teams gets returned by the function and stored into the \texttt{team type} variable.
 
-When the \texttt{CHANGE TEAM} statement gets invoked, the element of the list of available teams stored into the \texttt{TEAM TYPE} variable
+When the \texttt{CHANGE TEAM} statement gets invoked, the element of the list of available teams stored into the \texttt{team\_ type} variable
 gets passed as argument to the correspondent OpenCoarrays function. The \texttt{current\_team} variable used inside OpenCoarrays for
 representing the current communicator gets reassigned with the value contained into the element of the list passed as argument.
 Finally, a new element is added to the list of used teams. This list of element is nothing but a list of pointers to the elements of the list
-of available teams. The insert operation is always performed at the beginning of the list in order to keep track of the teams hierarchy.
-
-An execution of the \texttt{END TEAM} statements is implemented by removing the first element of the list of used teams and reassigning the
+of available teams. The insertion operation is always performed at the beginning of the list in order to keep track of the teams hierarchy.
+An execution of the \texttt{end team} statements is implemented by removing the first element of the list of used teams and reassigning the
 \texttt{current team} to the new first element of the list of used teams.
+
+Figure~\ref{fig:teams} depicts schematically an initial team of images (black arrows) executing over time (progressing
+downward) and able to coordinate and communicate through a global mechanism (black horizontal line).  At the point of executing
+\texttt{form team} and \texttt{change team} statements, the compiler inserts references to the OpenCoarrays \gls{abi} into the
+executable program.  Those references cause invocations of \texttt{MPI\_Split}, which in turn creates the colored groupins that
+correspond to teams in Fortran 2015.
+
 
 The list of available and used teams are both initialized to team 1 (equivalent to \texttt{MPI\_COMM\_WORLD}) at the beginning of the execution.
 
@@ -117,7 +127,7 @@ The list of available and used teams are both initialized to team 1 (equivalent 
 \includegraphics[width=0.7\textwidth]{figures/teams}
 \vspace{-36pt}
 \caption{Schematic depiction of a Fortran program executing over time
-  (left axis) in 12 images (top) that communicate with each other through global means (black horizontal bar) and later communicating within subgroups (colored horizontal bars).  Horizontal lines represent the communication mechanisms (default=solid, optional=dashed).  Fortran concepts or on the left.  The underlying \gls{mpi} concepts are the right.}
+  (left axis) in 12 images (top) that communicate with each other through global means (black horizontal bar) and later communicating within subgroups (colored horizontal bars).  Horizontal lines represent the communication mechanisms (default=solid, optional=dashed).  Fortran concepts or on the left.  The underlying \gls{mpi} concepts are the right.\label{fig:teams}}
 \end{figure*}
 %
 
@@ -135,6 +145,13 @@ The list of available and used teams are both initialized to team 1 (equivalent 
   over time\label{fig:caffeinate-wrf-hydro}}
 \end{figure*}
 %
+
+For illustrative purposes, we include two teams unit tests in
+Figures~\ref{fig:get-team-test}--\ref{team-number-test}.  These tests use a block distribution of images,
+dividing the initial team into three new teams, each with the same number of images except that a number of
+have one extra and the number of such images equals the remainder of integer division of the total
+number imagesa by the number of teams.
+
 \section{Discussion of Results}\label{sec:discussion}
 \subsection{A language extension}
 Discuss \lstinline|get_communicator|
