@@ -153,16 +153,13 @@ have one extra and the number of such images equals the remainder of integer div
 number imagesa by the number of teams.
 
 \section{Discussion of Results}\label{sec:discussion}
-\subsection{A language extension}
-Discuss \lstinline|get_communicator|
-
-\subsection{Teams Caffeination of WRF-Hydro: Ensemble Simulation}
+\subsection{WRF-Hydr: Ensemble Simulation}
 \gls{wrf-hydro} is a community hydrologic modeling system that provides a parallel-computing
-framework for coupling Numerical Weather Prediction models (\ref{fig:caffeinate-wrf-hydro}a), land surface models
-(\ref{fig:caffeinate-wrf-hydro}b), and a suite of hydrologic routing modules that handle spatial water redistribution
-via surface (overland) flow (\ref{fig:caffeinate-wrf-hydro}c), subsurface (soil column) flow (\ref{fig:caffeinate-wrf-hydro}c),
+framework for coupling Numerical Weather Prediction models (Figure \ref{fig:caffeinate-wrf-hydro}a), land surface models
+(Figure \ref{fig:caffeinate-wrf-hydro}b), and a suite of hydrologic routing modules that handle spatial water redistribution
+via surface (overland) flow (Figure \ref{fig:caffeinate-wrf-hydro}c), subsurface (soil column) flow (Figure \ref{fig:caffeinate-wrf-hydro}c),
 baseflow (deep groundwater, \ref{fig:caffeinate-wrf-hydro}d), and stream channel transport
-(\ref{fig:caffeinate-wrf-hydro}e)~\cite{gochisEtal2014}.
+(Figure \ref{fig:caffeinate-wrf-hydro}e)~\cite{gochisEtal2014}.
 
 While originally developed to couple land hydrology to the atmospheric processes of
 the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
@@ -216,6 +213,8 @@ over the individual ensemble members. The number of images per team and the
  when running ensembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
  variable initialization and allocation, 4) \texttt{STOP}.
 
+\subsection{A language extension}
+Discuss \lstinline|get_communicator|
 
 \section{Conclusions and Future Work}\label{sec:conclusions}
 
@@ -293,15 +292,15 @@ over the individual ensemble members. The number of images per team and the
 
 
 
-\appendix
+%\appendix
 %Appendix A
-\section{Teams unit tests}
+%\section{Teams unit tests}
 % This next section command marks the start of
 % Appendix B, and does not continue the present hierarchy
 
 \begin{figure*}
   \lstinputlisting{figures/tests/get-team.f90}
-  \caption{A unit test for the get-team function.\label{figure:get-team-test}}
+  \caption{A unit test for the get-team function.\label{fig:get-team-test}}
 \end{figure*}
 
 %\begin{figure*}
@@ -313,7 +312,7 @@ over the individual ensemble members. The number of images per team and the
 
 \begin{figure*}
   \lstinputlisting{figures/tests/team-number.f90}
-  \caption{A unit test for the team-number function.\label{figure:team-number-test}}
+  \caption{A unit test for the team-number function.\label{fig:team-number-test}}
 \end{figure*}
 
 
