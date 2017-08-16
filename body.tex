@@ -145,10 +145,24 @@ correspond to teams in Fortran 2015.
 %
 
 For illustrative purposes, we include two teams unit tests in
-Figures~\ref{fig:get-team-test}--\ref{fig:team-number-test}.  These tests use a block distribution of images,
+Figures~\ref{fig:team-number-test}--\ref{fig:get-team-test}. These tests use a block distribution of images,
 dividing the initial team into three new teams, each with the same number of images except that a number of
 have one extra and the number of such images equals the remainder of integer division of the total
-number imagesa by the number of teams.
+number images by the number of teams. At the top of Figure~\ref{fig:get-team-test} is a short assertion
+utility that executest global error termination across all ranks if the logical experession passed as its
+first argument is false.  The descriptions included as the second argument to every invocation of this
+assertion subroutine througout Figures~\ref{fig:team-number-test}--\ref{fig:get-team-test} describes the
+checks we perform for the teams features discussed in this paper.
+
+\subsection{A language extension}
+Lines 19 and 27 in Figure~\ref{fig:get-team-test} import a \texttt{get\_communicator()} function via Fortran's
+use-association mechancism for accesing entities in Fortran modules: an \texttt{opencoarrays} module in this
+case.  OpenCoarrays uses that module provide useful language extenions.  Lines 23 and 36 invoke this function
+to provide the \gls{mpi} communicator to the test subroutine \texttt{mpi\_mpatches\_caf}.  Assertions in the
+latter subroutine verify the expected correspondences between \gls{mpi} rank numbers, which differ from
+Fortran image numbers by -1, and the total number of ranks, which equals the total number of images.
+These checks providew the \gls{mpi}/\gls{caf} correspondence required for the newly caffeinated \gls{wrf-hydro}
+main program to interoperate safely with the remaining \gls{mpi} portions of \gls{wrf-hydro}.
 
 \section{Discussion of Results}\label{sec:discussion}
 \subsection{\gls{wrf-hydro}: Ensemble Simulation}
@@ -226,9 +240,6 @@ over the individual ensemble members. The number of images per team and the
  worth noting several details of separate runs which may potentially need altering
  when running ensembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
  variable initialization and allocation, 4) \texttt{STOP}.
-
-\subsection{A language extension}
-Discuss \lstinline|get_communicator|
 
 \section{Conclusions and Future Work}\label{sec:conclusions}
 We demonstrated the application of Fortran 2015 teams to the problem of ensemble
