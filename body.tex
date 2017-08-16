@@ -18,13 +18,13 @@ expressing parallel algorithms for these domains centers on
  designing and using various \gls{coarray} data structures.  In such settings, the moniker
 \gls{caf} seems appropriate.
 
-Less widely appreciated are the ways in which Fortran's intrinsic parallel programming model supports embarassingly parallel
+Less widely appreciated are the ways in which Fortran's intrinsic parallel programming model supports embarrassingly parallel
 applications, wherein the division into independent sub-problems requires little or no coordination between the
 the sub-problems. To support such applications, a parallel programming
 model might provide for explicit sub-problem disaggregation and independent sub-problem execution without any need for \glspl{coarray}.  The upcoming Fortran 2015 standard
 (expected to be published in 2018\footnote{A Committee Draft is at https://bit.ly/fortran-2015-draft.}) will provide several
 features that enable a considerable amount of parallel computation, coordination, and even some data communication
-without the use of \glspl{coarray}.  In the context of \gls{caf}, we propose a working definition of ``embarassingly parallel''
+without the use of \glspl{coarray}.  In the context of \gls{caf}, we propose a working definition of ``embarrassingly parallel''
 as denoting the class of parallel applications for which Fortran's non-\gls{coarray} parallel features cover all of the
 application's parallel algorithmic needs.
 
@@ -51,11 +51,11 @@ The objectives of the current work are threefold:
         for purposes of driving ensembles of simulations.
 \end{enumerate}
 The compiler front-end described in this paper lives on the teams branch of the
-\fnurl{Sourcery Institute \gls{gcc} fork}{https://github.com/sourceryinstitute/gcc}. The parallel runtime libary lives on the
+\fnurl{Sourcery Institute \gls{gcc} fork}{https://github.com/sourceryinstitute/gcc}. The parallel runtime library lives on the
 opencoarrays-teams branch of the \fnurl{OpenCoarrays \gls{abi}}{https://github.com/sourceryinstitute/opencoarrays}.
 
 The remainder of this paper is organized as follows: Section~\ref{sec:methodology} provides an overview of teams and their
-support in the aforementedioned \gls{gcc} fork and in OpenCoarrays.  Section~\ref{sec:discussion} discusses the use of teams
+support in the aforementioned \gls{gcc} fork and in OpenCoarrays.  Section~\ref{sec:discussion} discusses the use of teams
 in \gls{wrf-hydro} and a required language extension. Section~\ref{sec:conclusions} summarizes our conclusions and plans for
 future work.
 
@@ -79,7 +79,7 @@ A team is a set of images that can readily execute independently of other images
 At program launch, all images comprise a team designated by a language-defined integer identifier \texttt{initial\_team}.
 Except for the initial team, every team has a parent team assigned in a one-to-many parent/child hierarchy.
 A program executes a \texttt{form team} statement to divide the current team into new child teams.
-Each new team has an integer identifer that Fortran produces as the result of invoking the \texttt{team\_number()}
+Each new team has an integer identifier that Fortran produces as the result of invoking the \texttt{team\_number()}
 intrinsic function.  Information about the team to which the current image belongs can be determined by the
 processor from the collective value of the team variables on the images of the team.
 All images execute the \texttt{form team} statement as a collective operation.
@@ -194,7 +194,7 @@ performance.
 \vspace{-7pt}
 \caption{Scaling of the channel-only model initialization time to
   support calculation of Amdhal's law for estimating potential of
-  saved compuation times \label{fig:wrf-hydro-init-scaling}}
+  speed up of ensemble computation times with shared initialization. \label{fig:wrf-hydro-init-scaling}}
 \end{figure*}
 
 Particularly, we plan to investigate restructuring the code to perform
@@ -239,7 +239,13 @@ over the individual ensemble members. The number of images per team and the
  teams are formed and which teams handle which ensemble members. It is
  worth noting several details of separate runs which may potentially need altering
  when running ensembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
- variable initialization and allocation, 4) \texttt{STOP}.
+ variable initialization and allocation, 4) \texttt{STOP}. We have
+ already identified the potential for shared model initialization
+ prior to the forming of teams for the embarrassingly parallel
+ calculations. We expect other design choices which surface with
+ further experience programming under the teams functionality.
+
+
 
 \section{Conclusions and Future Work}\label{sec:conclusions}
 We demonstrated the application of Fortran 2015 teams to the problem of ensemble
