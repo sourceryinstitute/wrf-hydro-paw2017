@@ -231,6 +231,20 @@ over the individual ensemble members. The number of images per team and the
 Discuss \lstinline|get_communicator|
 
 \section{Conclusions and Future Work}\label{sec:conclusions}
+We demonstrated the application of Fortran 2015 teams to the problem of ensemble
+simulation and forecasting with the \gls{wrf-hydro} model. We accomplished this by
+implementing the first-ever compiler front-end and parallel runtime library support
+for Fortran 2015 teams.  Importantly, this use case did obviates the need for modifying
+the existing \gls{wrf-hydro} \gls{mpi} code.  In order to mesh \gls{caf} and \gls{mpi}
+harmoniously, we developed a language extension that exposes \gls{caf}'s underlying
+\gls{mpi} communicator for use in the original application code.  This approach allows
+for optional and incremental introduciton of \gls{caf}, i.e,``caffeination'' of the
+pre-existing \gls{mpi} program. The application revealed opportunities for further
+program optimizations facilitated by the newly caffeinated infrustructure:
+namely, we estimated an expected 1.9 speedup of ensemble run time speed up when
+common model initialization can be performed across all images, prior to defining teams.
+A speedup of this magnitude would have a welcome and signficant impact on the operational
+use of \gls{wrf-hydro}.
 
 %%%
 %%% Sample tables
