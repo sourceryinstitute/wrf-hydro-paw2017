@@ -106,7 +106,8 @@ In case of success, the resulting communicator is stored into a list of availabl
 Every element of the list keeps track of the association of team identifier and a MPI communicator.
 The elements of the list of available teams gets returned by the function and stored into the \texttt{team type} variable.
 
-When the \texttt{CHANGE TEAM} statement gets invoked, the element of the list of available teams stored into the \texttt{team\_ type} variable
+The list of available and used teams are both initialized to team 1 (equivalent to \texttt{MPI\_COMM\_WORLD}) at the beginning of the execution.
+When the \texttt{change team} statement gets invoked, the element of the list of available teams stored into the \texttt{team\_type} variable
 gets passed as argument to the correspondent OpenCoarrays function. The \texttt{current\_team} variable used inside OpenCoarrays for
 representing the current communicator gets reassigned with the value contained into the element of the list passed as argument.
 Finally, a new element is added to the list of used teams. This list of element is nothing but a list of pointers to the elements of the list
@@ -117,11 +118,8 @@ An execution of the \texttt{end team} statements is implemented by removing the 
 Figure~\ref{fig:teams} depicts schematically an initial team of images (black arrows) executing over time (progressing
 downward) and able to coordinate and communicate through a global mechanism (black horizontal line).  At the point of executing
 \texttt{form team} and \texttt{change team} statements, the compiler inserts references to the OpenCoarrays \gls{abi} into the
-executable program.  Those references cause invocations of \texttt{MPI\_Split}, which in turn creates the colored groupins that
+executable program.  Those references cause invocations of \texttt{MPI\_Split}, which in turn creates the colored groupings that
 correspond to teams in Fortran 2015.
-
-
-The list of available and used teams are both initialized to team 1 (equivalent to \texttt{MPI\_COMM\_WORLD}) at the beginning of the execution.
 
 \begin{figure*}
 \includegraphics[width=0.7\textwidth]{figures/teams}
@@ -201,7 +199,7 @@ channel submodel run in isolation. Scaling of the
 initialization of the channel-only model is presented in
 \ref{fig:wrf-hydro-init-scaling}. If 50 ensemble members are run concurrently with
 teams occupying 20 cores each, the initialization speedup will be
-approximately 20x. Currently, for the short-range forecasts, 
+approximately 20x. Currently, for the short-range forecasts,
 initialization requires approximately 50\% of the run time on
 NCAR's yellowstone computer and greater than that on NOAA's WCOSS
 system~\cite{yuetal2017}. These numbers are
