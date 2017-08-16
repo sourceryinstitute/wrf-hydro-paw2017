@@ -168,7 +168,7 @@ While originally developed to couple land hydrology to the atmospheric processes
 the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
 coupled to (forced by) prescribed upper boundary (weather)
 conditions (\ref{fig:caffeinate-wrf-hydro}). The chief example is NOAA's operational
-National Water Model~\cite{noaa2016}; a special configuration of
+National Water Model (NWM) ~\cite{noaa2016}; a special configuration of
 WRF-Hydro which provides real-time analysis and forecasts of
 hydrologic states over the contiguous U.S (\ref{fig:caffeinate-wrf-hydro}). Here we
 
@@ -218,8 +218,10 @@ of 1.9:
 S = 1 / { f/S_f + (1-f) } = 1 / (.5/20 + (1-.5)) = 1.9
 \end{equation}
 
-Obtaining a factor of 2 speed up for running ensembles by using CAF
-teams and restructuring the initialization has   
+Obtaining speed up of 1.9 when running ensembles by using CAF
+teams and restructuring the initialization would be welcome news in the
+operational (NWM) setting where it would help either reduce forecast latency
+or allow reduction of 24\/7 dedicated resources.
 
 In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
 over the individual ensemble members. The number of images per team and the
