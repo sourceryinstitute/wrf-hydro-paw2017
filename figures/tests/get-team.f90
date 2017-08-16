@@ -15,16 +15,16 @@ contains
 end module
 
 program main
-  !! summary: Test get_team function, an OpenCoarrays-specific language extension
-  use opencoarrays, only : get_team
+  !! summary: Test get_communicator function, an OpenCoarrays-specific language extension
+  use opencoarrays, only : get_communicator
   use assetions_module, only : assert
   implicit none
 
-  call mpi_matches_caf(get_team())
+  call mpi_matches_caf(get_communicator())
     !! verify # ranks = # images and image number = rank + 1
   block
     use iso_fortran_env, only : team_type
-    use opencoarrays, only : get_team, team_number !! TODO: remove team_number once gfortran supports it
+    use opencoarrays, only : get_communicator, team_number !! TODO: remove team_number once gfortran supports it
     type(team_type) :: league
     integer, parameter :: num_teams=2
       !! number of child teams to form from the parent initial team
@@ -33,7 +33,7 @@ program main
         !! map images to num_teams teams
       change team(league)
         !! join my destination team
-        call mpi_matches_caf(get_team())
+        call mpi_matches_caf(get_communicator())
           !! verify new # ranks = new # images and new image number = new rank + 1
         associate(my_team=>team_number())
           call assert(my_team==chosen_team,"assigned team matches chosen team")
