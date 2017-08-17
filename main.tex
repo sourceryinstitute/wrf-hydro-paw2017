@@ -139,8 +139,8 @@ then exposes the underlying \gls{caf} \gls{mpi} communicator to the original app
 code,  resulting in a one-to-one correspondence between \gls{mpi} group colors and Fortran
 teams.  We demonstrate our approach using the \gls{wrf-hydro} developed at the \gls{ncar}.
 The newly caffeinated main program replaces batch job submission scripts and forms teams
-teams that each execute one member of the simulation ensemble.   To support this work, we
-we developed the first compiler front-end and parallel runtime library support for teams.
+that each execute one member of the simulation ensemble.   To support this work, we
+developed the first compiler front-end and parallel runtime library support for teams.
 This paper describes the necessary modifications to a public \gls{gcc} fork, an
 OpenCoarrays~\cite{fanfarillo2014opencoarrays} \gls{abi} branch, and a \gls{wrf-hydro} branch.
 \end{abstract}
