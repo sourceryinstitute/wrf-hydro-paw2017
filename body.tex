@@ -60,9 +60,8 @@ in \gls{wrf-hydro} and a required language extension. Section~\ref{sec:conclusio
 future work.
 
 \section{Methodology}\label{sec:methodology}
-\subsection{Teams in Fortran 2015}\label{teams-in-fortran-2015}
 The Fortran 2008 parallel programming features do not provide for an environment in which
-subset of the images can easily work on part of an application without affecting
+a subset of the images can easily work on part of an application without affecting
 other images in the program.  Grouping the images of a program into nonoverlapping
 teams allows one to execute more effectively and independently parts of a larger
 problem.  A class of problems that can benefit from this feature is multiphysics codes
@@ -70,17 +69,19 @@ problem.  A class of problems that can benefit from this feature is multiphysics
 Such a feature, called \textit{Teams} in the Committee Draft of the Fortran 2015 standard, can significantly
 reduce the amount of off-node communication on an exascale machine, in particular when an entire team of images
 fits within a single compute node.
+
 The authors are unaware of any compiler support for this new feature other than that developed in the aforementioned
-\gls{gcc} fork and \gls{abi} branch developed for the current project.  The remainder of the current section
-provides an overview of the \textit{Teams} concept, the associated languager syntax, and the the compiler/\gls{abi}
+\gls{gcc} fork and an OpenCoarrays branch developed for the current project.  The remainder of the current section
+provides an overview of the \textit{Teams} concept, the associated language syntax, and the compiler/\gls{abi}
 implementation.
 
+\subsection{Teams in Fortran 2015}\label{teams-in-fortran-2015}
 A team is a set of images that can readily execute independently of other images outside the team.
 At program launch, all images comprise a team designated by a language-defined integer identifier \texttt{initial\_team}.
 Except for the initial team, every team has a parent team assigned in a one-to-many parent/child hierarchy.
-A program executes a \texttt{form team} statement to divide the current team into new child teams.
-Each new team has an integer identifier that Fortran produces as the result of invoking the \texttt{team\_number()}
-intrinsic function.  Information about the team to which the current image belongs can be determined by the
+A program executes a \texttt{form team} statement to create a mapping that can be used subsequently to divide the current
+team into new child teams.  Each new team has an integer identifier that Fortran produces as the result of invoking the
+\texttt{team\_number()} intrinsic function.  Information about the team to which the current image belongs can be determined by the
 processor from the collective value of the team variables on the images of the team.
 All images execute the \texttt{form team} statement as a collective operation.
 
@@ -90,14 +91,28 @@ specified by a variable of derived type~\texttt{team\_type}.  Subsequent executi
 statement restores the current team back to that team to which it belonged immediately prior to execution of the most
 recent \texttt{change team} statement.
 
-Teams are described by a scalar, derived type variable of type \texttt{team\_type}. This derived-type variable has private components.
-The \texttt{form team} statement takes as first argument a \texttt{team\_number} that uniquely identifies the team and a \texttt{team\_type}
-variable as second argument.
+Teams are described by a scalar variable of derived type \texttt{team\_type}. This derived-type variable has private components.
+The \texttt{form team} statement takes as its first argument a \texttt{team\_number} that uniquely identifies the team and takes as
+the second argument a \texttt{team\_type} variable.
 Successful execution of a \texttt{form team} statement assigns the team-variable (of type \texttt{team type}) on each
-participating image a value that specifies the new team that the image will belong to.
+participating image a value that specifies the new team to which the image will belong.
 The \texttt{change team} statement takes as argument a \texttt{team type} variable that represents the new team to be used as
 current team. The execution of the \texttt{end team} statement restores the current team back
 to that immediately prior to execution of the \texttt{change team} statement.
+
+Figures~\ref{fig:team-number-test}-\ref{fig:get-communicator-test} demonstrate the use of teams in two unit tests from the
+OpenCoarrays repository.
+
+\begin{figure*}
+  \lstinputlisting{figures/tests/team-number.f90}
+  \caption{A unit test for the team-number function.\label{fig:team-number-test}}
+\end{figure*}
+
+\begin{figure*}
+  \lstinputlisting{figures/tests/get-communicator.f90}
+  \caption{A unit test for the get\_communicator function.\label{fig:get-communicator-test}}
+\end{figure*}
+
 
 \subsection{Teams in \gls{gcc} and OpenCoarrays}\label{subsec:teams-in-gcc}
 From an MPI perspective, a Fortran team is comparable to an MPI communicator. The \texttt{form team} statement is implemented in OpenCoarrays
@@ -145,17 +160,17 @@ correspond to teams in Fortran 2015.
 %
 
 For illustrative purposes, we include two teams unit tests in
-Figures~\ref{fig:team-number-test}--\ref{fig:get-team-test}. These tests use a block distribution of images,
+Figures~\ref{fig:team-number-test}--\ref{fig:get-communicator-test}. These tests use a block distribution of images,
 dividing the initial team into three new teams, each with the same number of images except that a number of
 have one extra and the number of such images equals the remainder of integer division of the total
-number images by the number of teams. At the top of Figure~\ref{fig:get-team-test} is a short assertion
+number images by the number of teams. At the top of Figure~\ref{fig:get-communicator-test} is a short assertion
 utility that executest global error termination across all ranks if the logical experession passed as its
 first argument is false.  The descriptions included as the second argument to every invocation of this
-assertion subroutine througout Figures~\ref{fig:team-number-test}--\ref{fig:get-team-test} describes the
+assertion subroutine througout Figures~\ref{fig:team-number-test}--\ref{fig:get-communicator-test} describes the
 checks we perform for the teams features discussed in this paper.
 
 \subsection{A language extension}
-Lines 19 and 27 in Figure~\ref{fig:get-team-test} import a \texttt{get\_communicator()} function via Fortran's
+Lines 19 and 27 in Figure~\ref{fig:get-communicator-test} import a \texttt{get\_communicator()} function via Fortran's
 use-association mechancism for accesing entities in Fortran modules: an \texttt{opencoarrays} module in this
 case.  OpenCoarrays uses that module provide useful language extenions.  Lines 23 and 36 invoke this function
 to provide the \gls{mpi} communicator to the test subroutine \texttt{mpi\_mpatches\_caf}.  Assertions in the
@@ -343,23 +358,12 @@ use of \gls{wrf-hydro}.
 % This next section command marks the start of
 % Appendix B, and does not continue the present hierarchy
 
-\begin{figure*}
-  \lstinputlisting{figures/tests/get-team.f90}
-  \caption{A unit test for the get-team function.\label{fig:get-team-test}}
-\end{figure*}
-
 %\begin{figure*}
 %\includegraphics[width=0.7\textwidth]{figures/hydro-map}
 %\vspace{-36pt}
 %\caption{Sample \gls{wrf-hydro} simulation domain.}
 %\end{figure*}
 %
-
-\begin{figure*}
-  \lstinputlisting{figures/tests/team-number.f90}
-  \caption{A unit test for the team-number function.\label{fig:team-number-test}}
-\end{figure*}
-
 \begin{acks}
 The first author would like to thank the Visitor Programs of the Computational Information Systems Laboratory and the Research Applications Laboratory of \gls{ncar} for travel support for a visit during which much of the work presented in this paper was performed.
 

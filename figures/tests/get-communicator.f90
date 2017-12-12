@@ -2,7 +2,6 @@ module assertions_module
   implicit none
 contains
   elemental subroutine assert(assertion,description)
-    !! TODO: move this to a common place for all tests to use
     logical, intent(in) :: assertion
     character(len=*), intent(in) :: description
     integer, parameter :: max_digits=12
@@ -17,7 +16,7 @@ end module
 program main
   !! summary: Test get_communicator function, an OpenCoarrays-specific language extension
   use opencoarrays, only : get_communicator
-  use assetions_module, only : assert
+  use assertions_module, only : assert
   implicit none
 
   call mpi_matches_caf(get_communicator())
