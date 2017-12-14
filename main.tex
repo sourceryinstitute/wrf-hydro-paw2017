@@ -87,7 +87,7 @@
 \title{Incremental caffeination of a terrestrial hydrological modeling framework using Fortran 2015 teams}
 %\titlenote{Produces the permission block, and
 %  copyright information}
-%\subtitle{Extended Abstract}
+\subtitle{Extended Abstract}
 %\subtitlenote{The full version of the author's guide is available as
 %  \texttt{acmart.pdf} document}
 
@@ -127,22 +127,23 @@
 \email{elfanfa@ucar.edu}
 
 \begin{abstract}
-We present the use of Fortran 2015 teams (grouped processes) running an embarrassingly
-parallel ensemble of simulations built around a pre-existing \gls{mpi} application.  One
-challenge that arises relates to the Fortran standard's eschewing any direct reference to
-a lower-level communication substrate, such as \gls{mpi}, leaving any interoperability
-between Fortran's intrinsic parallel programming model and the supporting substrate to
-the quality of the Fortran compiler implmentation.  We demonstrate an approach for
-incrementally introducig Fortran's intrinsic parallel programming model, \gls{caf}, a process
-we term ``caffeination.''  Our approach puts \gls{caf} in charge of program initiation and
-then exposes the underlying \gls{caf} \gls{mpi} communicator to the original application
+We present the use of Fortran 2018 teams (grouped processes) running an parallel ensemble
+of simulations built around a pre-existing \gls{mpi} application.  A challenge arises
+around the Fortran standard's eschewing any direct reference to lower-level communication
+substrate, such as \gls{mpi}, leaving any interoperability between Fortran's intrinsic
+parallel programming model and the supporting substrate to the quality of the Fortran
+compiler implmentation.  We demonstrate an approach for incrementally introducing
+Fortran's intrinsic parallel programming model, \gls{caf}, a process we term
+``caffeination.''  Our approach puts \gls{caf} in charge of program initiation and
+exposes the underlying \gls{caf} \gls{mpi} communicator to the original application
 code,  resulting in a one-to-one correspondence between \gls{mpi} group colors and Fortran
 teams.  We demonstrate our approach using the \gls{wrf-hydro} developed at the \gls{ncar}.
 The newly caffeinated main program replaces batch job submission scripts and forms teams
-that each execute one member of the simulation ensemble.   To support this work, we
-developed the first compiler front-end and parallel runtime library support for teams.
-This paper describes the necessary modifications to a public \gls{gcc} fork, an
-OpenCoarrays~\cite{fanfarillo2014opencoarrays} \gls{abi} branch, and a \gls{wrf-hydro} branch.
+that each execute one ensemble member.  To support this work, we developed the first
+compiler front-end and parallel runtime library support for teams.  This paper describes
+the necessary modifications to a public \gls{gcc} fork, an
+OpenCoarrays~\cite{fanfarillo2014opencoarrays} \gls{abi} branch, and a \gls{wrf-hydro}
+branch.
 \end{abstract}
 
 %
