@@ -22,7 +22,7 @@ Less widely appreciated are the ways in which Fortran's intrinsic parallel progr
 parallel applications, wherein the division into independent sub-problems requires little or no coordination between
 the sub-problems. To support such applications, a parallel programming
 model might provide for explicit sub-problem disaggregation and independent sub-problem execution without any need for
-\gls{pgas} data structures such as \glspl{coarray}.  The upcoming Fortran 2015 standard
+\gls{pgas} data structures such as \glspl{coarray}.  The upcoming Fortran 2018 standard
 (expected to be published in 2018\footnote{A Committee Draft is at https://bit.ly/fortran-2015-draft.}) will provide several
 features that enable a considerable amount of parallel computation, coordination, and even some data communication
 without the use of \glspl{coarray}.  In the context of modern Fortran, we propose a working definition of
@@ -45,7 +45,7 @@ hydrological model developed at \gls{ncar}.
 \subsection{Objectives}\label{sec:objectives}
 The objectives of the current work are threefold:
 \begin{enumerate}
-  \item To contribute the first-ever compiler front-end support for Fortran 2015 teams.
+  \item To contribute the first-ever compiler front-end support for Fortran 2018 teams.
   \item To contribute the parallel runtime library functionality required to support the new compiler capabilities.
   \item To study and address issues arising form integrating teams into an existing \gls{mpi} application, \gls{wrf-hydro},
         for purposes of driving ensembles of simulations.
@@ -66,7 +66,7 @@ other images in the program.  Grouping the images of a program into nonoverlappi
 teams allows one to execute more effectively and independently parts of a larger
 problem.  A class of problems that can benefit from this feature is multiphysics codes
 (e.g.,  climate models).
-Such a feature, called \textit{Teams} in the Committee Draft of the Fortran 2015 standard, can significantly
+Such a feature, called \textit{Teams} in the Committee Draft of the Fortran 2018 standard, can significantly
 reduce the amount of off-node communication on an exascale machine, in particular when an entire team of images
 fits within a single compute node.
 
@@ -75,7 +75,7 @@ The authors are unaware of any compiler support for this new feature other than 
 provides an overview of the \textit{Teams} concept, the associated language syntax, and the compiler/\gls{abi}
 implementation.
 
-\subsection{Teams in Fortran 2015}\label{teams-in-fortran-2015}
+\subsection{Teams in Fortran 2018}\label{teams-in-fortran-2015}
 A team is a set of images that can readily execute independently of other images outside the team.
 At program launch, all images comprise a team designated by a language-defined integer identifier \texttt{initial\_team}.
 Except for the initial team, every team has a parent team assigned in a one-to-many parent/child hierarchy.
@@ -103,16 +103,15 @@ to that immediately prior to execution of the \texttt{change team} statement.
 Figures~\ref{fig:team-number-test}-\ref{fig:get-communicator-test} demonstrate the use of teams in two unit tests from the
 OpenCoarrays repository.
 
-\begin{figure*}
+\begin{figure}
   \lstinputlisting{figures/tests/team-number.f90}
   \caption{A unit test for the team-number function.\label{fig:team-number-test}}
-\end{figure*}
+\end{figure}
 
 \begin{figure*}
   \lstinputlisting{figures/tests/get-communicator.f90}
   \caption{A unit test for the get\_communicator function.\label{fig:get-communicator-test}}
 \end{figure*}
-
 
 \subsection{Teams in \gls{gcc} and OpenCoarrays}\label{subsec:teams-in-gcc}
 From an MPI perspective, a Fortran team is comparable to an MPI communicator. The \texttt{form team} statement is implemented in OpenCoarrays
@@ -134,18 +133,18 @@ Figure~\ref{fig:teams} depicts schematically an initial team of images (black ar
 downward) and able to coordinate and communicate through a global mechanism (black horizontal line).  At the point of executing
 \texttt{form team} and \texttt{change team} statements, the compiler inserts references to the OpenCoarrays \gls{abi} into the
 executable program.  Those references cause invocations of \texttt{MPI\_Split}, which in turn creates the colored groupings that
-correspond to teams in Fortran 2015.
+correspond to teams in Fortran 2018.
 
-\begin{figure*}
-\includegraphics[width=0.7\textwidth]{figures/teams}
+\begin{figure}
+\includegraphics[width=0.4\textwidth]{figures/teams}
 \vspace{-36pt}
 \caption{Schematic depiction of a Fortran program executing over time
   (left axis) in 12 images (top) that communicate with each other through global means (black horizontal bar) and later communicating within subgroups (colored horizontal bars).  Horizontal lines represent the communication mechanisms (default=solid, optional=dashed).  Fortran concepts or on the left.  The underlying \gls{mpi} concepts are the right.\label{fig:teams}}
-\end{figure*}
+\end{figure}
 %
 
-\begin{figure*}
-\includegraphics[width=0.7\textwidth]{figures/WRF-Hydro-caf-ens-model_chain.png}
+\begin{figure}
+\includegraphics[width=0.4\textwidth]{figures/WRF-Hydro-caf-ens-model_chain.png}
 \vspace{-7pt}
 \caption{Caffeination of NCAR's WRF-Hydro model using coarray Fortran (CAF)
   teams. Specific example components of  NOAA's National Water
@@ -156,7 +155,7 @@ correspond to teams in Fortran 2015.
   parallelism (CAF teams): the underlying WRF-Hydro Model Chain
   originally under MPI can be transitioned incrementally towards CAF
   over time\label{fig:caffeinate-wrf-hydro}}
-\end{figure*}
+\end{figure}
 %
 
 For illustrative purposes, we include two teams unit tests in
@@ -204,13 +203,13 @@ of labor involved in designing workflows and can open up new
 possibilities for improving data flows and optimizing ensemble run
 performance.
 
-\begin{figure*}
-\includegraphics[width=0.7\textwidth]{figures/init_timing_linear.png}
+\begin{figure}
+\includegraphics[width=0.4\textwidth]{figures/init_timing_linear.png}
 \vspace{-7pt}
 \caption{Scaling of the channel-only model initialization time to
   support calculation of Amdhal's law for estimating potential of
   speed up of ensemble computation times with shared initialization. \label{fig:wrf-hydro-init-scaling}}
-\end{figure*}
+\end{figure}
 
 Particularly, we plan to investigate restructuring the code to perform
 model initialization which is shared over all ensemble members using
@@ -263,10 +262,10 @@ over the individual ensemble members. The number of images per team and the
 
 
 \section{Conclusions and Future Work}\label{sec:conclusions}
-We demonstrated the application of Fortran 2015 teams to the problem of ensemble
+We demonstrated the application of Fortran 2018 teams to the problem of ensemble
 simulation and forecasting with the \gls{wrf-hydro} model. We accomplished this by
 implementing the first-ever compiler front-end and parallel runtime library support
-for Fortran 2015 teams.  Importantly, this use case did obviates the need for modifying
+for Fortran 2018 teams.  Importantly, this use case did obviates the need for modifying
 the existing \gls{wrf-hydro} \gls{mpi} code.  In order to mesh \gls{caf} and \gls{mpi}
 harmoniously, we developed a language extension that exposes \gls{caf}'s underlying
 \gls{mpi} communicator for use in the original application code.  This approach allows
