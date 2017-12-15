@@ -2,7 +2,6 @@ program main  !! Test get_communicator language extension
   use opencoarrays, only : get_communicator
   use assertions_module, only : assert
   use iso_fortran_env, only : team_type
-  use opencoarrays, only : get_communicator
   type(team_type) :: league
   integer, parameter :: num_teams=2 !! number of child teams to form
   implicit none
@@ -17,8 +16,7 @@ program main  !! Test get_communicator language extension
          call assert(num_images()==new_num_images,"block distribution of images")
       end associate; end associate
     end team
-    call assert( initial_image==this_image(),"correctly remapped to original image number")
-    call assert( initial_num_images==num_images(),"correctly remapped to original number of images")
+    call assert( [initial_image==this_image(),initial_num_images==num_images()],"correct rank/image remapping")
   end associate
   sync all; if (this_image()==1) print *,"Test passed."
 contains
