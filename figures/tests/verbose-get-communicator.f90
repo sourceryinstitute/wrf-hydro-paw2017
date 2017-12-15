@@ -3,7 +3,7 @@ module assertions_module
 contains
   elemental subroutine assert(assertion,description)
     logical, intent(in) :: assertion
-    character(len=*), intent(in), optional :: description
+    character(len=*), intent(in) :: description
     integer, parameter :: max_digits=12
     character(len=max_digits) :: image_number
     if (.not.assertion) then
@@ -13,22 +13,27 @@ contains
   end subroutine
 end module
 
-program main  !! Test get_communicator language extension
+program main
+  !! summary: Test get_communicator function, an OpenCoarrays-specific language extension
   use opencoarrays, only : get_communicator
   use assertions_module, only : assert
   implicit none
 
-  call mpi_matches_caf(get_communicator()) !! verify rank & image numbering
+  call mpi_matches_caf(get_communicator())
+    !! verify # ranks = # images and image number = rank + 1
   block
     use iso_fortran_env, only : team_type
-    use opencoarrays, only : get_communicator
+    use opencoarrays, only : get_communicator, team_number !! TODO: remove team_number once gfortran supports it
     type(team_type) :: league
-    integer, parameter :: num_teams=2 !! number of child teams to form
-
+    integer, parameter :: num_teams=2
+      !! number of child teams to form from the parent initial team
     associate(initial_image=>this_image(), initial_num_images=>num_images(), chosen_team=>destination_team(this_image(),num_teams))
-      form team(chosen_team,league) !! create mapping
-      change team(league) !! join child team
-        call mpi_matches_caf(get_communicator()) !! verify new rank/image numbers
+      form team(chosen_team,league)
+        !! map images to num_teams teams
+      change team(league)
+        !! join my destination team
+        call mpi_matches_caf(get_communicator())
+          !! verify new # ranks = new # images and new image number = new rank + 1
         associate(my_team=>team_number())
           call assert(my_team==chosen_team,"assigned team matches chosen team")
           associate(new_num_images=>initial_num_images/num_teams+merge(1,0,my_team<=mod(initial_num_images,num_teams)))
@@ -50,17 +55,16 @@ contains
    end function
 
   subroutine mpi_matches_caf(comm)
-    !! verify new # ranks = new # images & new image number = new rank + 1
     use iso_c_binding, only : c_int
     use mpi, only : MPI_COMM_SIZE, MPI_COMM_RANK
     integer(c_int), intent(in) :: comm
       !! MPI communicator
     integer(c_int) :: isize,ierror,irank
     call MPI_COMM_SIZE(comm, isize, ierror)
-    call assert( ierror==0 , "'call MPI_COMM_SIZE' successful" )
+    call assert( ierror==0 , "successful call MPI_COMM_SIZE" )
     call assert( isize==num_images(), "num MPI ranks = num CAF images " )
     call MPI_COMM_RANK(comm, irank, ierror)
-    call assert( ierror==0 , "'call MPI_COMM_RANK' successful" )
-    call assert( irank==this_image()-1 , "correct rank/image correspondence" )
+    call assert( ierror==0 , "successful call MPI_COMM_RANK" )
+    call assert( irank==this_image()-1 , "correct rank/image-number correspondence" )
   end subroutine
 end program
