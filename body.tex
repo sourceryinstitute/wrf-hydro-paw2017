@@ -51,9 +51,10 @@ on the opencoarrays-teams branch of the \fnurl{OpenCoarrays \gls{abi}}{https://g
 \gls{abi}.  We are unaware of any compiler support for Fortran 2018 teams other than that developed for the current
 project.
 
-In the remainder of this paper, Section~\ref{sec:methodology} describes the teams
-support in the \gls{gcc} fork and in OpenCoarrays; Section~\ref{sec:discussion} discusses the use of teams
-in \gls{wrf-hydro} and a required language extension; Section~\ref{sec:conclusions} summarizes our conclusions and future work plans.
+%In the remainder of this paper, Section~\ref{sec:methodology} describes the teams
+%support in the \gls{gcc} fork and in OpenCoarrays; Section~\ref{sec:discussion} discusses the use of teams
+%in \gls{wrf-hydro} and a required language extension; Section~\ref{sec:conclusions} summarizes our conclusions
+%and future work plans.
 
 \section{Methodology}\label{sec:methodology}
 Fortran 2008 does not provide for an environment in which
@@ -80,9 +81,8 @@ specified by a derived-type~\texttt{team\_type} variable.  Subsequent execution 
 statement restores the current team back to that team to which it belonged immediately prior to execution of the most
 recent \texttt{change team}.
 
-The \texttt{team\_type} variable has private components.
 The \texttt{form team} statement takes an \texttt{team\_number} argument uniquely identifying the team and
-a \texttt{team\_type} argument storing all other information about the team.
+a \texttt{team\_type} argument encapsulating other team information in private components.
 Successful execution of a \texttt{form team} statement assigns the team-variable (of type \texttt{team type}) on each
 participating image a value that specifies the new team to which the image will belong.
 The \texttt{change team} statement takes as argument a \texttt{team type} variable that represents the new team to be used as
@@ -189,11 +189,11 @@ possibilities for improving data flows and optimizing ensemble run
 performance.
 
 \begin{figure}
-\includegraphics[width=0.4\textwidth]{figures/init_timing_linear.png}
+\includegraphics[width=0.3\textwidth]{figures/init_timing_linear.png}
 \vspace{-7pt}
-\caption{Scaling of the channel-only model initialization time to
-  support calculation of Amdhal's law for estimating potential of
-  speed up of ensemble computation times with shared initialization. \label{fig:wrf-hydro-init-scaling}}
+\caption{Scaling of the channel-only initialization time to
+  support Amdhal's law calculation of potential speedup of ensemble
+  computation with shared initialization. \label{fig:wrf-hydro-init-scaling}}
 \end{figure}
 
 We will investigate restructuring the code to share model initialization
