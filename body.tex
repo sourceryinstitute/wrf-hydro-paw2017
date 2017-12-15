@@ -125,7 +125,7 @@ correspond to teams in Fortran 2018.
 
 \begin{figure}
 \includegraphics[width=0.4\textwidth]{figures/teams}
-\vspace{-18pt}
+\vspace{-24pt}
 \caption{Schematic of a program executing over time
   (left axis) in 12 images (top) communicating globally (black horizontal bar) and later within subgroups (colored horizontal bars).  Horizontal lines represent the communication mechanisms (default=solid, optional=dashed).  Fortran concepts are on the left.  Underlying \gls{mpi} concepts are on the right.\label{fig:teams}}
 \end{figure}
@@ -146,23 +146,22 @@ correspond to teams in Fortran 2018.
 
 The teams unit tests in
 Figures~\ref{fig:team-number-test}--\ref{fig:get-communicator-test} use a block distribution of images,
-dividing the initial team into three new teams, each with the same number of images except that a number of
-have one extra and the number of such images equals the remainder of integer division of the total
-number images by the number of teams. At the top of Figure~\ref{fig:get-communicator-test} is a short assertion
-utility that executest global error termination across all ranks if the logical experession passed as its
-first argument is false.  The descriptions included as the second argument to every invocation of this
-assertion subroutine througout Figures~\ref{fig:team-number-test}--\ref{fig:get-communicator-test} describes the
-checks we perform for the teams features discussed in this paper.
+dividing the initial team into three new teams, each with the same number of images except a number of teams
+with one extra. The number of teams with one extra equals the remainder of integer division of the total
+number images by the number of teams. Figure~\ref{fig:get-communicator-test} contains an assertion
+utility that executes global error termination across all images if the logical expression passed as its
+first argument is false.  The optional second argument in some
+\texttt{assert} subroutine invocations in Figures~\ref{fig:team-number-test}--\ref{fig:get-communicator-test}
+describes the checks performed for the teams features discussed in this paper.
 
 \subsection{A language extension}
-Lines 19 and 27 in Figure~\ref{fig:get-communicator-test} import a \texttt{get\_communicator()} function via Fortran's
-use-association mechancism for accesing entities in Fortran modules: an \texttt{opencoarrays} module in this
-case.  OpenCoarrays uses that module provide useful language extenions.  Lines 23 and 36 invoke this function
+Line 2 in Figure~\ref{fig:get-communicator-test} imports a \texttt{get\_communicator()} function via Fortran's
+use-association mechanism for accesing entities in Fortran modules: an \texttt{opencoarrays} module that
+provides language extensions.  Lines 8 and 12 invoke this function
 to provide the \gls{mpi} communicator to the test subroutine \texttt{mpi\_mpatches\_caf}.  Assertions in the
-latter subroutine verify the expected correspondences between \gls{mpi} rank numbers, which differ from
-Fortran image numbers by -1, and the total number of ranks, which equals the total number of images.
-These checks providew the \gls{mpi}/\gls{caf} correspondence required for the newly caffeinated \gls{wrf-hydro}
-main program to interoperate safely with the remaining \gls{mpi} portions of \gls{wrf-hydro}.
+latter subroutine verify the expected correspondences between \gls{mpi} image and rank numbering.
+The \gls{mpi}/\gls{caf} correspondence enables the newly caffeinated \gls{wrf-hydro}
+to interoperate safely with the existing \gls{wrf-hydro} \gls{mpi} code.
 
 \section{Discussion of Results}\label{sec:discussion}
 \gls{wrf-hydro} is a community hydrologic modeling system that provides a parallel-computing
