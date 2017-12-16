@@ -251,12 +251,12 @@ We implemented the first-ever compiler front-end and parallel runtime library su
 for teams, obviating the need for modifying \gls{mpi} code in \gls{wrf-hydro}.  To combine
 \gls{caf} and \gls{mpi} harmoniously, we developed a language extension that exposes \gls{caf}'s
 underlying \gls{mpi} communicator for use in \gls{wrf-hydro}.  This approach facilitates
-optional, incremental introduciton of \gls{caf}, i.e,``caffeination'' of the,
+incremental introduction of \gls{caf}, i.e.,``caffeination,'' of the
 pre-existing \gls{mpi} program. The application revealed opportunities for further
-program optimizations supporting by the newly caffeinated infrustructure:
-namely, we predict a 1.9 speedup in the ensemble execution when common model initializations
-can be performed across all images prior to defining teams.  A speedup of this magnitude would
-have a welcome and signficant impact on operational uses of \gls{wrf-hydro}.
+program optimizations supported by the newly caffeinated infrustructure:
+namely, we predict a speedup of 1.9 in the ensemble execution when common model initializations
+are performed across all images prior to defining teams.  A speedup of this magnitude would
+signficantly impact \gls{wrf-hydro} operational use cases.
 
 %%%
 %%% Sample tables
@@ -345,9 +345,9 @@ have a welcome and signficant impact on operational uses of \gls{wrf-hydro}.
 %\end{figure*}
 %
 \begin{acks}
-The first author thanks the Visitor Programs of the Computational Information Systems Laboratory
-and the Research Applications Laboratory of \gls{ncar} for travel support for a visit during which
-much of the work presented in this paper was performed.
+The first author thanks the
+\gls{ncar} Visitor Program for supporting a visit to \gls{ncar} during which
+much of the work described herein was performed.
 
 %  The work is
 %  supported by the \grantsponsor{GSxxxxx}{National
