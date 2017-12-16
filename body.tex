@@ -102,18 +102,20 @@ unit tests from the OpenCoarrays repository.
 \end{figure*}
 
 \subsection{Teams in \gls{gcc} and OpenCoarrays}\label{subsec:teams-in-gcc}
-A Fortran team is comparable to an MPI communicator. The \texttt{form team} statement is implemented in OpenCoarrays
-using \texttt{MPI\_Comm\_split} and passing the team id argument as \texttt{color} for \texttt{MPI\_Comm\_split}.
-In case of success, the resulting communicator is stored into a list of available teams.
-Every list element tracks the association of team identifier and a MPI communicator.
-The function returns the list of available teams stored in the \texttt{team type} variable.
+A Fortran team is comparable to an MPI communicator. OpenCoarrays uses
+\texttt{MPI\_Comm\_split} to support
+\texttt{form team}, passing
+the team id as the \texttt{color},
+and storing the resulting communicator in an available-teams list.
+Every list element tracks the team/communicator pairings.
+The function returns the available-teams list stored in the \texttt{team type} variable.
 
-The list of available and used teams are both initialized to team 1 (equivalent to \texttt{MPI\_COMM\_WORLD}) at the beginning of the execution.
-When the \texttt{change team} statement gets invoked, the element of the list of available teams stored into the \texttt{team\_type} variable
-gets passed as argument to the correspondent OpenCoarrays function. The \texttt{current\_team} variable used inside OpenCoarrays for
+We initialize the available- and used-teams lists to 1 (equivalent to \texttt{MPI\_COMM\_WORLD}) at the beginning of the execution.
+At a \texttt{change team}, the available-teams list element stored in the \texttt{team\_type} variable
+gets passed to the corresponding OpenCoarrays function. The \texttt{current\_team} variable used inside OpenCoarrays for
 representing the current communicator gets reassigned with the value contained into the element of the list passed as argument.
-Finally, a new element is added to the list of used teams. This list of element is nothing but a list of pointers to the elements of the list
-of available teams. The insertion operation is always performed at the beginning of the list in order to keep track of the teams hierarchy.
+Finally, a new element is added to the list of used teams. The list elements are pointers to the elements of the available-teams list.
+The insertion operation is always performed at the beginning of the list in order to keep track of the teams hierarchy.
 An execution of the \texttt{end team} statements is implemented by removing the first element of the list of used teams and reassigning the
 \texttt{current team} to the new first element of the list of used teams.
 
@@ -133,13 +135,11 @@ correspond to teams in Fortran 2018.
 
 \begin{figure}
 \includegraphics[width=0.4\textwidth]{figures/WRF-Hydro-caf-ens-model_chain.png}
-\vspace{-7pt}
-\caption{Caffeination of NCAR's WRF-Hydro model using Fortran 2018
-  teams. Example components of  the National Water
-  Model are shown. Different \gls{mpi} colors represent independent teams,
-  each of which is one member of an ensemble of simulations.
-  This approach supports introducting \gls{caf} incrementally
-  into the WRF-Hydro Model Chain
+\vspace{-12pt}
+\caption{WRF-Hydro caffeination via Fortran 2018
+  teams: example components of  the National Water
+  Model. Different \gls{mpi} colors represent independent teams,
+  each of which is an ensemble member.
   \label{fig:caffeinate-wrf-hydro}}
 \end{figure}
 %
@@ -150,9 +150,8 @@ dividing the initial team into three new teams, each with the same number of ima
 with one extra. The number of teams with one extra equals the remainder of integer division of the total
 number images by the number of teams. Figure~\ref{fig:get-communicator-test} contains an assertion
 utility that executes global error termination across all images if the logical expression passed as its
-first argument is false.  The optional second argument in some
-\texttt{assert} subroutine invocations in Figures~\ref{fig:team-number-test}--\ref{fig:get-communicator-test}
-describes the checks performed for the teams features discussed in this paper.
+first argument is false.  The optional second argument in \texttt{assert}
+describes the checks performed.
 
 \subsection{A language extension}
 Line 2 in Figure~\ref{fig:get-communicator-test} imports a \texttt{get\_communicator()} function via Fortran's
@@ -172,17 +171,17 @@ baseflow (deep groundwater, \ref{fig:caffeinate-wrf-hydro}d), and stream channel
 (Figure \ref{fig:caffeinate-wrf-hydro}e)~\cite{gochisEtal2014}.
 
 Developed to couple land hydrology to the atmosphere,
-WRF-Hydro most often runs ``offline'' with
+WRF-Hydro usually runs ``offline'' with
 forcing from upper-boundary (weather) conditions (Fig.~\ref{fig:caffeinate-wrf-hydro}).
 The chief example is \gls{nwm} of \gls{noaa}~\cite{noaa2016}, a  special
-configuration of WRF-Hydro providing operational, real-time analysis and forecasts of
-hydrologic states over the contiguous U.S. (\ref{fig:caffeinate-wrf-hydro}).
+configuration of WRF-Hydro providing operational, real-time analysis and forecasts
+over the U.S.
 
 Ensemble forecasting and ensemble data assimilation are
-growing research topics for WRF-Hydro. Running ensembles under a
-single executable program and job submission on HPC platforms as shown in
-Fig. \ref{fig:caffeinate-wrf-hydro} can greatly reduce the
-labor in designing workflows and can open up new
+growing research areas for WRF-Hydro. Running ensembles under one
+executable program and job submission as shown in
+Fig. \ref{fig:caffeinate-wrf-hydro} can reduce the
+labor in workflow design and can open up
 possibilities for improving data flows and optimizing ensemble
 execution time.
 
