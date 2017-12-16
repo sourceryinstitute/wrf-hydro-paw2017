@@ -1,6 +1,5 @@
 module assertions_module!Terminate globally if test fails
- implicit none
-contains
+ implicit none; contains
  elemental subroutine assert(assertion,description)
    logical, intent(in) :: assertion
    character(len=*), intent(in), optional :: description
@@ -8,7 +7,7 @@ contains
    character(len=max_digits) :: image_number
    if (.not.assertion) then
     write(image_number,*) this_image()
-    error stop description//" failed on image "//image_number
+    error stop description//" failed on "//image_number
    end if
  end subroutine
 end module

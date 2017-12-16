@@ -45,9 +45,9 @@ The objectives of the current work are threefold:
   \item To contribute the parallel runtime library functionality required to support the new compiler capabilities.
   \item To study and address issues arising form integrating teams into an existing \gls{mpi} application, \gls{wrf-hydro},
 \end{enumerate}
-The compiler front-end described herein lives on the teams branch of the
-\fnurl{Sourcery Institute \gls{gcc} fork}{https://github.com/sourceryinstitute/gcc}. The parallel runtime library lives
-on the opencoarrays-teams branch of the \fnurl{OpenCoarrays \gls{abi}}{https://github.com/sourceryinstitute/opencoarrays}
+The compiler front-end described herein lives on the
+\fnurl{Sourcery Institute \gls{gcc} fork's}{https://github.com/sourceryinstitute/gcc} teams branch. The parallel runtime library lives
+on the \fnurl{OpenCoarrays}{https://github.com/sourceryinstitute/opencoarrays} opencoarrays-teams
 \gls{abi}.  We are unaware of any compiler support for Fortran 2018 teams other than that developed for the current
 project.
 
@@ -57,13 +57,11 @@ project.
 %and future work plans.
 
 \section{Methodology}\label{sec:methodology}
-Fortran 2008 does not provide for an environment in which
-a subset of the images can easily work on part of an application without affecting
-images outside the subset.  Grouping the images of a program into nonoverlapping
-teams allows for more efficient and independent execution of parts of a larger
-problem.  Multiphysics codes such as climate and weather models may benefit from the
-consequent reduction in off-node communication, particularly when an entire team of images
-fits within a single compute node.
+Fortran 2018 will facilitate forming nonoverlapping image
+groups, allowing more efficient and independent subproblem execution.
+Multiphysics applications, e.g., climate and weather models, may benefit from the
+consequent reduction in off-node communication, particularly when an entire team
+fits in a single compute node.
 
 \subsection{Teams in Fortran 2018}\label{teams-in-fortran-2015}
 A team is a set of images that can execute independently of other images outside the team.
@@ -75,8 +73,8 @@ new child teams.  Each new team has an integer identifier that Fortran produces 
 determined by the compiler from the collective value of the team variables on the images of the team.
 All images execute the \texttt{form team} statement as a collective operation.
 
-During execution, each image has a current team, which is only changed by execution of \texttt{change team} and
-\texttt{end team} statements. Executing \texttt{change team} moves the executing image form the current team to a team
+An image changes teams by executing \texttt{change team} or
+\texttt{end team}. The former moves the executing image form the current team to a team
 specified by a derived-type~\texttt{team\_type} variable.  Subsequent execution of a corresponding \texttt{end team}
 statement restores the current team back to that team to which it belonged immediately prior to execution of the most
 recent \texttt{change team}.
@@ -93,20 +91,22 @@ unit tests from the OpenCoarrays repository.
 
 \begin{figure}
   \lstinputlisting{figures/tests/team-number.f90}
+  \vspace{-12pt}
   \caption{A unit test for the team-number function.\label{fig:team-number-test}}
 \end{figure}
 
 \begin{figure*}
   \lstinputlisting{figures/tests/get-communicator.f90}
+  \vspace{-12pt}
   \caption{A unit test for the get\_communicator function.\label{fig:get-communicator-test}}
 \end{figure*}
 
 \subsection{Teams in \gls{gcc} and OpenCoarrays}\label{subsec:teams-in-gcc}
-From an MPI perspective, a Fortran team is comparable to an MPI communicator. The \texttt{form team} statement is implemented in OpenCoarrays
+A Fortran team is comparable to an MPI communicator. The \texttt{form team} statement is implemented in OpenCoarrays
 using \texttt{MPI\_Comm\_split} and passing the team id argument as \texttt{color} for \texttt{MPI\_Comm\_split}.
 In case of success, the resulting communicator is stored into a list of available teams.
-Every element of the list keeps track of the association of team identifier and a MPI communicator.
-The elements of the list of available teams gets returned by the function and stored into the \texttt{team type} variable.
+Every list element tracks the association of team identifier and a MPI communicator.
+The function returns the list of available teams stored in the \texttt{team type} variable.
 
 The list of available and used teams are both initialized to team 1 (equivalent to \texttt{MPI\_COMM\_WORLD}) at the beginning of the execution.
 When the \texttt{change team} statement gets invoked, the element of the list of available teams stored into the \texttt{team\_type} variable
@@ -172,7 +172,7 @@ baseflow (deep groundwater, \ref{fig:caffeinate-wrf-hydro}d), and stream channel
 (Figure \ref{fig:caffeinate-wrf-hydro}e)~\cite{gochisEtal2014}.
 
 Developed to couple land hydrology to the atmosphere,
-WRF-Hydro is most often run ``offline'' with one-way-coupled
+WRF-Hydro most often runs ``offline'' with
 forcing from upper-boundary (weather) conditions (Fig.~\ref{fig:caffeinate-wrf-hydro}).
 The chief example is \gls{nwm} of \gls{noaa}~\cite{noaa2016}, a  special
 configuration of WRF-Hydro providing operational, real-time analysis and forecasts of
@@ -222,17 +222,17 @@ of 1.9:
 \begin{equation}
 S = 1 / { f/S_f + (1-f) } = 1 / (.5/20 + (1-.5)) = 1.9
 \end{equation}
-To apply teams to \gls{wrf-hydro}, we converted the main program to a subroutine
-invoked inside a loop over the ensemble members.  To put \gls{caf} in the driver seat,
-we eliminated the \texttt{MPI\_Init} and \texttt{MPI\_FInalize} calls from the original
-main program and instead pass a communicator to the converted main program.o  To facilitate
-looping over the ensemble, we also eliminated the \texttt{stop} statement in the converted
-main program.
+We converted the \gls{wrf-hydro} main program to a subroutine
+called in a loop over the ensemble members.
+We deleted \texttt{MPI\_Init} and \texttt{MPI\_FInalize} calls in the converted
+subroutine and instead pass a communicator to the subroutine.  To
+loop over the ensemble also required deleting the \texttt{stop} statement in the
+subroutine.
 
 \section{Conclusions and Future Work}\label{sec:conclusions}
-We applied Fortran 2018 to ensemble simulation and forecasting with \gls{wrf-hydro}.
-We implemented the first-ever compiler front-end and parallel runtime library support
-for teams.  We developed a language extension that exposes \gls{caf}'s
+We applied Fortran 2018 teams to \gls{wrf-hydro} ensemble simulation and forecasting.
+We developed the first-ever compiler front-end and parallel runtime library support
+for teams and a language extension that exposes \gls{caf}'s
 underlying \gls{mpi} communicator for use in \gls{wrf-hydro}.  This approach facilitates
 incremental introduction of \gls{caf}, i.e.,``caffeination,'' of the
 pre-existing \gls{mpi} program.  We predict a speedup of 1.9 in ensemble execution when
@@ -327,8 +327,8 @@ would grealy impact \gls{wrf-hydro} operational use cases.
 %
 \begin{acks}
 The first author thanks the
-\gls{ncar} Visitor Program for supporting a visit to \gls{ncar} during which
-much of the work described herein was performed.
+\gls{ncar} Visitor Program for supporting a visit to \gls{ncar} to
+perform much of the work described herein.
 
 %  The work is
 %  supported by the \grantsponsor{GSxxxxx}{National

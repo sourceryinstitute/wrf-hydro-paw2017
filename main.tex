@@ -127,21 +127,20 @@
 \email{elfanfa@ucar.edu}
 
 \begin{abstract}
-We present the use of Fortran 2018 teams (grouped processes) running an parallel ensemble
-of simulations built around a pre-existing \gls{mpi} application.  A challenge arises
+We present Fortran 2018 teams (grouped processes) running a parallel ensemble of simulations
+built from a pre-existing \gls{mpi} application.  A challenge arises
 around the Fortran standard's eschewing any direct reference to lower-level communication
-substrate, such as \gls{mpi}, leaving any interoperability between Fortran's intrinsic
-parallel programming model and the supporting substrate to the quality of the Fortran
-compiler implmentation.  We demonstrate an approach for incrementally introducing
-Fortran's intrinsic parallel programming model, \gls{caf}, a process we term
-``caffeination.''  Our approach puts \gls{caf} in charge of program initiation and
-exposes the underlying \gls{caf} \gls{mpi} communicator to the original application
-code,  resulting in a one-to-one correspondence between \gls{mpi} group colors and Fortran
-teams.  We demonstrate our approach using the \gls{wrf-hydro} developed at the \gls{ncar}.
+substrates, such as \gls{mpi}, leaving any interoperability between Fortran's
+parallel programming model, \gls{caf}, and the supporting substrate to the quality of the
+compiler implmentation.  Our approach introduces  \gls{caf} incrementally, a process we term
+``caffeination.''  By letting \gls{caf} initiate execution and exposing
+the underlying \gls{mpi} communicator to the original application
+code, we create a one-to-one correspondence between \gls{mpi} group colors and Fortran
+teams.  We apply our approach to the \gls{ncar}'s \gls{wrf-hydro}.
 The newly caffeinated main program replaces batch job submission scripts and forms teams
 that each execute one ensemble member.  To support this work, we developed the first
 compiler front-end and parallel runtime library support for teams.  This paper describes
-the necessary modifications to a public \gls{gcc} fork, an
+the required modifications to a public \gls{gcc} fork, an
 OpenCoarrays~\cite{fanfarillo2014opencoarrays} \gls{abi} branch, and a \gls{wrf-hydro}
 branch.
 \end{abstract}
