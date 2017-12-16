@@ -135,7 +135,7 @@ correspond to teams in Fortran 2018.
 \includegraphics[width=0.4\textwidth]{figures/WRF-Hydro-caf-ens-model_chain.png}
 \vspace{-7pt}
 \caption{Caffeination of NCAR's WRF-Hydro model using Fortran 2018
-  teams. Example components of  NOAA's National Water
+  teams. Example components of  the National Water
   Model are shown. Different \gls{mpi} colors represent independent teams,
   each of which is one member of an ensemble of simulations.
   This approach supports introducting \gls{caf} incrementally
@@ -164,28 +164,27 @@ The \gls{mpi}/\gls{caf} correspondence enables the newly caffeinated \gls{wrf-hy
 to interoperate safely with the existing \gls{wrf-hydro} \gls{mpi} code.
 
 \section{Discussion of Results}\label{sec:discussion}
-\gls{wrf-hydro} is a community hydrologic modeling system that provides a parallel-computing
-framework for coupling Numerical Weather Prediction models (Figure \ref{fig:caffeinate-wrf-hydro}a), land surface models
-(Figure \ref{fig:caffeinate-wrf-hydro}b), and a suite of hydrologic routing modules that handle spatial water redistribution
-via surface (overland) flow (Figure \ref{fig:caffeinate-wrf-hydro}c), subsurface (soil column) flow (Figure \ref{fig:caffeinate-wrf-hydro}c),
+\gls{wrf-hydro} is a community hydrologic model providing a parallel-computing
+framework for coupling weather prediction (Figure \ref{fig:caffeinate-wrf-hydro}a), land surface
+(Figure \ref{fig:caffeinate-wrf-hydro}b), and hydrologic routing to handle spatial water redistribution
+via overland flow (Figure \ref{fig:caffeinate-wrf-hydro}c), subsurface (soil column) flow (Figure \ref{fig:caffeinate-wrf-hydro}c),
 baseflow (deep groundwater, \ref{fig:caffeinate-wrf-hydro}d), and stream channel transport
 (Figure \ref{fig:caffeinate-wrf-hydro}e)~\cite{gochisEtal2014}.
 
-While originally developed to couple land hydrology to the atmospheric processes of
-the WRF model, WRF-Hydro is most commonly run in ``offline'' mode where it is one-way
-coupled to (forced by) prescribed upper boundary (weather)
-conditions (\ref{fig:caffeinate-wrf-hydro}). The chief example is NOAA's operational
-National Water Model (NWM) ~\cite{noaa2016}; a special configuration of
-WRF-Hydro which provides real-time analysis and forecasts of
-hydrologic states over the contiguous U.S (\ref{fig:caffeinate-wrf-hydro}). Here we
+Developed to couple land hydrology to the atmosphere,
+WRF-Hydro is most often run ``offline'' with one-way-coupled
+forcing from upper-boundary (weather) conditions (Fig.~\ref{fig:caffeinate-wrf-hydro}).
+The chief example is \gls{nwm} of \gls{noaa}~\cite{noaa2016}, a  special
+configuration of WRF-Hydro providing operational, real-time analysis and forecasts of
+hydrologic states over the contiguous U.S. (\ref{fig:caffeinate-wrf-hydro}).
 
-Ensemble forecasting and ensemble data assimilation are active and
-growing areas of research with WRF-Hydro. Running ensembles under a
-single executable and job submission on HPC platforms as shown in
-\ref{fig:caffeinate-wrf-hydro} can greatly reduce the amount
-of labor involved in designing workflows and can open up new
-possibilities for improving data flows and optimizing ensemble run
-performance.
+Ensemble forecasting and ensemble data assimilation are
+growing research topics for WRF-Hydro. Running ensembles under a
+single executable program and job submission on HPC platforms as shown in
+Fig. \ref{fig:caffeinate-wrf-hydro} can greatly reduce the
+labor in designing workflows and can open up new
+possibilities for improving data flows and optimizing ensemble
+execution time.
 
 \begin{figure}
 \includegraphics[width=0.3\textwidth]{figures/init_timing_linear.png}
@@ -195,68 +194,50 @@ performance.
   computation with shared initialization. \label{fig:wrf-hydro-init-scaling}}
 \end{figure}
 
-We will investigate restructuring the code to share model initialization
-over all ensemble members using
-the full number of images prior to forming teams. Amortizing common
-model initialization across all available computational resources
-rather than repeating common aspects of the initialization in each
-ensemble member using only that member's fraction of the resources has
-the potentital to provide notable computational savings for
-ensemble model runs where initialization comprises a large fraction of
-the total run time. Such an example is in the production run of the
-National Water Model short-term forecasts. Here we are currently
-researching the possibility of moving from the current deterministic
-(single ensemble member) model run to an ensemble run for the stream
-channel submodel run in isolation. Scaling of the
-initialization of the channel-only model is presented in
-\ref{fig:wrf-hydro-init-scaling}. If 50 ensemble members are run concurrently with
+An optimization that we expect teams to facilitate will involve sharing initialization
+work over all ensemble members using
+the full image set before changing teams. Amortizing common
+initialization work across all available computational resources
+rather than repeating common initialization work in each
+ensemble member using only that member's fraction of the resources might
+save significant computational costs in runs for which
+initialization occupies a large fraction of
+the run time such as in production runs of short-term \gls{nwm}
+forecasts. We are exploring
+moving from deterministic
+(single ensemble member) runs to ensemble runs for the stream
+channel submodel in isolation. Fig.~\ref{fig:wrf-hydro-init-scaling}
+presents the scaling behavior of channel-only runs.
+Running 50 ensemble members concurrently in
 teams occupying 20 cores each, the initialization speedup will be
 approximately 20x. Currently, for the short-range forecasts,
 initialization requires approximately 50\% of the run time on
-NCAR's yellowstone computer and greater than that on NOAA's WCOSS
+NCAR's yellowstone computer and greater than that on \gls{noaa} WCOSS
 system~\cite{yuetal2017}. These numbers are
 similar for the channel-only model. In our proposed application for an ensemble size of 50, we estimate that
 approximately half the runtime ($f=.5$) can be sped up by a factor of
-about 20 ( $S_f=20$), based on \ref{fig:wrf-hydro-init_scaling}. From
+about 20 ($S_f=20$), based on Fig.~\ref{fig:wrf-hydro-init-scaling}. From
 these estimates, Amdhal\'s law yields a total speedup
 of 1.9:
-
 \begin{equation}
 S = 1 / { f/S_f + (1-f) } = 1 / (.5/20 + (1-.5)) = 1.9
 \end{equation}
-
-Obtaining speed up of 1.9 when running ensembles by using CAF
-teams and restructuring the initialization would be welcome news in the
-operational (NWM) setting where it would help either reduce forecast latency
-or allow reduction of 24\/7 dedicated resources.
-
-In the application of teams to WRF Hydro, the main WRF-Hydro program is wrapped in a loop
-over the individual ensemble members. The number of images per team and the
- number of ensemble members are specified in a namelist. Along with
- the number of available images, these parameters determine how many
- teams are formed and which teams handle which ensemble members. It is
- worth noting several details of separate runs which may potentially need altering
- when running ensembles via teams: 1) \texttt{MPI\_INIT}, 2) \texttt{MPI\_FINALIZE}, 3)
- variable initialization and allocation, 4) \texttt{STOP}. We have
- already identified the potential for shared model initialization
- prior to the forming of teams for the embarrassingly parallel
- calculations. We expect other design choices which surface with
- further experience programming under the teams functionality.
-
-
+To apply teams to \gls{wrf-hydro}, we converted the main program to a subroutine
+invoked inside a loop over the ensemble members.  To put \gls{caf} in the driver seat,
+we eliminated the \texttt{MPI\_Init} and \texttt{MPI\_FInalize} calls from the original
+main program and instead pass a communicator to the converted main program.o  To facilitate
+looping over the ensemble, we also eliminated the \texttt{stop} statement in the converted
+main program.
 
 \section{Conclusions and Future Work}\label{sec:conclusions}
-We applied Fortran 2018 to ensemble simulation and forecasting with the \gls{wrf-hydro} model.
+We applied Fortran 2018 to ensemble simulation and forecasting with \gls{wrf-hydro}.
 We implemented the first-ever compiler front-end and parallel runtime library support
-for teams, obviating the need for modifying \gls{mpi} code in \gls{wrf-hydro}.  To combine
-\gls{caf} and \gls{mpi} harmoniously, we developed a language extension that exposes \gls{caf}'s
+for teams.  We developed a language extension that exposes \gls{caf}'s
 underlying \gls{mpi} communicator for use in \gls{wrf-hydro}.  This approach facilitates
 incremental introduction of \gls{caf}, i.e.,``caffeination,'' of the
-pre-existing \gls{mpi} program. The application revealed opportunities for further
-program optimizations supported by the newly caffeinated infrustructure:
-namely, we predict a speedup of 1.9 in the ensemble execution when common model initializations
-are performed across all images prior to defining teams.  A speedup of this magnitude would
-signficantly impact \gls{wrf-hydro} operational use cases.
+pre-existing \gls{mpi} program.  We predict a speedup of 1.9 in ensemble execution when
+spreading common initializations across all images prior to changing teams.  Such a speedup
+would grealy impact \gls{wrf-hydro} operational use cases.
 
 %%%
 %%% Sample tables
